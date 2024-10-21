@@ -1,7 +1,7 @@
 package types
 
 import (
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 
 	errorsmod "cosmossdk.io/errors"
 )

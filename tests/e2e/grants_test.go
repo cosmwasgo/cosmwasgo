@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	wasmvm "github.com/CosmWasm/wasmvm/v2"
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

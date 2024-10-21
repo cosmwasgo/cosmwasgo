@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	"github.com/stretchr/testify/assert"
 
 	storetypes "cosmossdk.io/store/types"

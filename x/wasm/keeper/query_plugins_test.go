@@ -6,7 +6,7 @@ import (
 	"math"
 	"testing"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
