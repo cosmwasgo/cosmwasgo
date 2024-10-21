@@ -42,7 +42,7 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmkeeper "github.com/cosmwasgo/cosmwasgo/x/wasm/keeper"
 )
 
 // SetupOptions defines arguments that are passed into `WasmApp` constructor.

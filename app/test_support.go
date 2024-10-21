@@ -9,7 +9,7 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmkeeper "github.com/cosmwasgo/cosmwasgo/x/wasm/keeper"
 )
 
 func (app *WasmApp) GetIBCKeeper() *ibckeeper.Keeper {

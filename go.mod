@@ -1,4 +1,4 @@
-module github.com/CosmWasm/wasmd
+module github.com/cosmwasgo/cosmwasgo
 
 go 1.23
 

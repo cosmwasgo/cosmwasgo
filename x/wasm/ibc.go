@@ -15,8 +15,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/cosmwasgo/cosmwasgo/x/wasm/keeper"
+	"github.com/cosmwasgo/cosmwasgo/x/wasm/types"
 )
 
 // DefaultMaxIBCCallbackGas is the default value of maximum gas that an IBC callback can use.
@@ -494,7 +494,7 @@ func ValidateChannelParams(channelID string) error {
 //
 // This function is x/wasm specific and might include the full error text in the future
 // as we gain confidence that it is deterministic. Don't use it in other contexts.
-// See also https://github.com/CosmWasm/wasmd/issues/1740.
+// See also https://github.com/cosmwasgo/cosmwasgo/issues/1740.
 func CreateErrorAcknowledgement(err error) ibcexported.Acknowledgement {
 	return channeltypes.NewErrorAcknowledgementWithCodespace(err)
 }
