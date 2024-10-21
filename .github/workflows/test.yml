@@ -12,6 +12,9 @@ jobs:
           go-version: 1.23.2
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all history
+          tags: true # Fetch all tags
       - name: download wasmvm glibc
         run: sudo wget https://github.com/CosmWasm/wasmvm/releases/download/v2.1.2/libwasmvm.x86_64.so -O /lib/libwasmvm.x86_64.so
       - name: Test
