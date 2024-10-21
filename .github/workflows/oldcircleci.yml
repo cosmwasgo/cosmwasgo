@@ -14,7 +14,7 @@ jobs:
   setup-dependencies:
     runs-on: ubuntu-latest
     container:
-      image: cimg/go:1.21
+      image: cimg/go:1.23
     steps:
       - uses: actions/checkout@v3
 
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup-dependencies
     container:
-      image: cimg/go:1.21
+      image: cimg/go:1.23
     steps:
       - uses: actions/checkout@v3
 
@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup-dependencies
     container:
-      image: cimg/go:1.21
+      image: cimg/go:1.23
     strategy:
       matrix:
         partition: [1, 2, 3, 4]
@@ -117,7 +117,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test-cover
     container:
-      image: cimg/go:1.21
+      image: cimg/go:1.23
     steps:
       - uses: actions/checkout@v3
 
@@ -143,7 +143,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test-cover
     container:
-      image: cimg/go:1.21
+      image: cimg/go:1.23
     steps:
       - uses: actions/checkout@v3
 
