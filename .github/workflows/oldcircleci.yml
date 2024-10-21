@@ -1,0 +1,281 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "*"
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  setup-dependencies:
+    runs-on: ubuntu-latest
+    container:
+      image: cimg/go:1.21
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Restore Go modules cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ${{ env.GOPATH }}/pkg/mod
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+
+      - name: Cache go modules
+        run: make go-mod-cache
+
+      - name: Build
+        run: make build
+
+      - name: Git garbage collection
+        run: git gc
+
+  tidy-go:
+    runs-on: ubuntu-latest
+    needs: setup-dependencies
+    container:
+      image: cimg/go:1.21
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check go mod tidy
+        run: |
+          go mod tidy
+          CHANGES_IN_REPO=$(git status --porcelain)
+          if [[ -n "$CHANGES_IN_REPO" ]]; then
+            echo "Repository is dirty. Showing 'git status' and 'git --no-pager diff' for debugging now:"
+            git status && git --no-pager diff
+            exit 1
+          fi
+
+  test-cover:
+    runs-on: ubuntu-latest
+    needs: setup-dependencies
+    container:
+      image: cimg/go:1.21
+    strategy:
+      matrix:
+        partition: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Restore Go modules cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ${{ env.GOPATH }}/pkg/mod
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+
+      - name: Run tests with coverage
+        run: |
+          export GORACE=halt_on_error=1
+          export VERSION="$(git describe --tags --long | sed 's/v\(.*\)/\1/')"
+          export GO111MODULE=on
+          mkdir -p logs profiles
+
+          # Get the list of packages
+          PKGS=$(go list ./... | grep -v '/simulation')
+          # Split the packages into chunks
+          TOTAL_PARTS=4
+          PART=${{ matrix.partition }}
+          PACKAGES_ARRAY=($PKGS)
+          TOTAL_PACKAGES=${#PACKAGES_ARRAY[@]}
+          PACKAGES_PER_PART=$(( (TOTAL_PACKAGES + TOTAL_PARTS - 1) / TOTAL_PARTS ))
+          START_INDEX=$(( (PART - 1) * PACKAGES_PER_PART ))
+          END_INDEX=$(( START_INDEX + PACKAGES_PER_PART ))
+          if [ $END_INDEX -gt $TOTAL_PACKAGES ]; then
+            END_INDEX=$TOTAL_PACKAGES
+          fi
+          PART_PKGS="${PACKAGES_ARRAY[@]:$START_INDEX:$PACKAGES_PER_PART}"
+
+          for pkg in $PART_PKGS; do
+            id=$(echo "$pkg" | sed 's|[/.]|_|g')
+            go test -mod=readonly -timeout 8m -race -coverprofile=profiles/$id.out -covermode=atomic -tags='ledger test_ledger_mock' "$pkg" | tee "logs/$id-$RANDOM.log"
+          done
+
+      - name: Upload Test Logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-logs-${{ matrix.partition }}
+          path: logs/
+
+      - name: Upload Coverage Profiles
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-profiles-${{ matrix.partition }}
+          path: profiles/
+          retention-days: 1
+
+  upload-coverage:
+    runs-on: ubuntu-latest
+    needs: test-cover
+    container:
+      image: cimg/go:1.21
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download Coverage Profiles
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-profiles-*
+          path: artifacts
+
+      - name: Gather coverage profiles
+        run: |
+          set -ex
+          echo "Gathering coverage profiles"
+          echo "mode: atomic" > coverage.txt
+          find artifacts -name '*.out' | while read -r prof; do
+            tail -n +2 "$prof" >> coverage.txt
+          done
+
+      - name: Upload coverage to Codecov
+        run: bash <(curl -s https://codecov.io/bash) -f coverage.txt
+
+  test-system:
+    runs-on: ubuntu-latest
+    needs: test-cover
+    container:
+      image: cimg/go:1.21
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Restore Go modules cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ${{ env.GOPATH }}/pkg/mod
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+
+      - name: Build and run system tests
+        run: make test-system
+
+      - name: Store system test artifacts
+        if: failure()
+        run: |
+          mkdir -p /tmp/system-test-workspace
+          mv ./tests/system/testnet /tmp/system-test-workspace
+
+      - name: Upload system test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: system-test-artifacts
+          path: /tmp/system-test-workspace
+
+  benchmark:
+    runs-on: ubuntu-latest
+    needs: test-cover
+    container:
+      image: cimg/go:1.21
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Restore Go modules cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ${{ env.GOPATH }}/pkg/mod
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+
+      - name: Benchmarks for gas calculations
+        run: |
+          cd ./x/wasm/keeper
+          go test -bench .
+
+      - name: Benchmarks to compare with native modules
+        run: |
+          cd ./benchmarks
+          go test -bench .
+
+  simulations:
+    runs-on: ubuntu-latest
+    needs: setup-dependencies
+    container:
+      image: cimg/go:1.21
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run simulations
+        run: |
+          make test-sim-deterministic test-sim-multi-seed-short test-sim-import-export
+
+      - name: Upload simulation artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: simulations
+          path: /tmp
+
+  docker-image:
+    runs-on: ubuntu-latest
+    needs: setup-dependencies
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Docker artifact
+        run: docker build --pull -t "cosmwasm/wasmd:${{ github.sha }}" .
+
+      - name: Ensure libwasmvm version is correct
+        run: |
+          IN_DOCKER=$(docker run --rm "cosmwasm/wasmd:${{ github.sha }}" /usr/bin/wasmd query wasm libwasmvm-version)
+          echo "Runtime libwasmvm-version in docker: $IN_DOCKER"
+          IN_GOMOD=$(go list -m github.com/CosmWasm/wasmvm/v2 | cut -d" " -f2 | cut -d"v" -f2)
+          echo "wasmvm version in go.mod: $IN_GOMOD"
+          if [[ "$IN_DOCKER" != "$IN_GOMOD" ]]; then
+            echo "Mismatch of wasmvm versions detected"
+            exit 1
+          fi
+
+      - name: Push application Docker image to docker hub
+        if: github.ref == 'refs/heads/main'
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker tag "cosmwasm/wasmd:${{ github.sha }}" cosmwasm/wasmd:latest
+          echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
+          docker push cosmwasm/wasmd:latest
+          docker logout
+
+  docker-tagged:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Docker artifact
+        run: docker build --pull -t "cosmwasm/wasmd:${{ github.ref_name }}" .
+
+      - name: Push application Docker image to docker hub
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
+          docker push "cosmwasm/wasmd:${{ github.ref_name }}"
+          docker logout
+
+  release-tagged:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
+          draft: true
+          body: "See the [CHANGELOG](https://github.com/CosmWasm/wasmd/blob/${{ github.ref_name }}/CHANGELOG.md) for details on the changes in this version."
