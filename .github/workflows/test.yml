@@ -17,6 +17,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: download wasmvm glibc
-        run: wget https://github.com/CosmWasm/wasmvm/releases/download/v2.1.2/libwasmvm.x86_64.so -O /lib/libwasmvm.x86_64.so
+        run: sudo wget https://github.com/CosmWasm/wasmvm/releases/download/v2.1.2/libwasmvm.x86_64.so -O /lib/libwasmvm.x86_64.so
       - name: Test
         run: make test
