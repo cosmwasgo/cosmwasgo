@@ -9,7 +9,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
-	"github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/cosmwasgo/cosmwasgo/x/wasm/types"
 )
 
 const (

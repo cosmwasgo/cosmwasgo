@@ -15,9 +15,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 
-	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/CosmWasm/wasmd/x/wasm/keeper/wasmtesting"
-	"github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/cosmwasgo/cosmwasgo/x/wasm/keeper"
+	"github.com/cosmwasgo/cosmwasgo/x/wasm/keeper/wasmtesting"
+	"github.com/cosmwasgo/cosmwasgo/x/wasm/types"
 )
 
 func TestOnRecvPacket(t *testing.T) {

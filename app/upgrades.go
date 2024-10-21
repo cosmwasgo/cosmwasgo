@@ -18,11 +18,11 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/CosmWasm/wasmd/app/upgrades"
-	"github.com/CosmWasm/wasmd/app/upgrades/noop"
-	v050 "github.com/CosmWasm/wasmd/app/upgrades/v050"
-	v2 "github.com/CosmWasm/wasmd/x/wasm/migrations/v2"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/cosmwasgo/cosmwasgo/app/upgrades"
+	"github.com/cosmwasgo/cosmwasgo/app/upgrades/noop"
+	v050 "github.com/cosmwasgo/cosmwasgo/app/upgrades/v050"
+	v2 "github.com/cosmwasgo/cosmwasgo/x/wasm/migrations/v2"
+	wasmtypes "github.com/cosmwasgo/cosmwasgo/x/wasm/types"
 )
 
 // Upgrades list of chain upgrades

@@ -19,10 +19,10 @@ import (
 	txmodule "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/CosmWasm/wasmd/app"
-	"github.com/CosmWasm/wasmd/app/params"
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/cosmwasgo/cosmwasgo/app"
+	"github.com/cosmwasgo/cosmwasgo/app/params"
+	wasmkeeper "github.com/cosmwasgo/cosmwasgo/x/wasm/keeper"
+	wasmtypes "github.com/cosmwasgo/cosmwasgo/x/wasm/types"
 )
 
 // NewRootCmd creates a new root command for wasmd. It is called once in the

@@ -11,7 +11,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
-	"github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/cosmwasgo/cosmwasgo/x/wasm/types"
 )
 
 // NewLegacyWasmProposalHandler creates a new governance Handler for wasm proposals

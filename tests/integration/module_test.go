@@ -24,12 +24,12 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 
-	"github.com/CosmWasm/wasmd/x/wasm"
-	"github.com/CosmWasm/wasmd/x/wasm/exported"
-	"github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/CosmWasm/wasmd/x/wasm/keeper/testdata"
-	v2 "github.com/CosmWasm/wasmd/x/wasm/migrations/v2"
-	"github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/cosmwasgo/cosmwasgo/x/wasm"
+	"github.com/cosmwasgo/cosmwasgo/x/wasm/exported"
+	"github.com/cosmwasgo/cosmwasgo/x/wasm/keeper"
+	"github.com/cosmwasgo/cosmwasgo/x/wasm/keeper/testdata"
+	v2 "github.com/cosmwasgo/cosmwasgo/x/wasm/migrations/v2"
+	"github.com/cosmwasgo/cosmwasgo/x/wasm/types"
 )
 
 type mockSubspace struct {

@@ -24,17 +24,17 @@ const (
 	// In the 2.0 upgrade, this was reduced by a factor of 1000 (https://github.com/CosmWasm/cosmwasm/pull/1884).
 	//
 	// The multiplier deserves more reproducible benchmarking and a strategy that allows easy adjustments.
-	// This is tracked in https://github.com/CosmWasm/wasmd/issues/566 and https://github.com/CosmWasm/wasmd/issues/631.
+	// This is tracked in https://github.com/cosmwasgo/cosmwasgo/issues/566 and https://github.com/cosmwasgo/cosmwasgo/issues/631.
 	// Gas adjustments are consensus breaking but may happen in any release marked as consensus breaking.
 	// Do not make assumptions on how much gas an operation will consume in places that are hard to adjust,
 	// such as hardcoding them in contracts.
 	//
 	// Please note that all gas prices returned to wasmvm should have this multiplied.
-	// Benchmarks and numbers were discussed in: https://github.com/CosmWasm/wasmd/pull/634#issuecomment-938055852
+	// Benchmarks and numbers were discussed in: https://github.com/cosmwasgo/cosmwasgo/pull/634#issuecomment-938055852
 	DefaultGasMultiplier uint64 = 140_000
 	// DefaultInstanceCost is how much SDK gas we charge each time we load a WASM instance.
 	// Creating a new instance is costly, and this helps put a recursion limit to contracts calling contracts.
-	// Benchmarks and numbers were discussed in: https://github.com/CosmWasm/wasmd/pull/634#issuecomment-938056803
+	// Benchmarks and numbers were discussed in: https://github.com/cosmwasgo/cosmwasgo/pull/634#issuecomment-938056803
 	DefaultInstanceCost uint64 = 60_000
 	// DefaultInstanceCostDiscount is charged instead of DefaultInstanceCost for cases where
 	// we assume the contract is loaded from an in-memory cache.
@@ -42,7 +42,7 @@ const (
 	// Now we use something small that roughly reflects the 45µs startup time (30x cheaper than DefaultInstanceCost).
 	DefaultInstanceCostDiscount uint64 = 2_000
 	// DefaultCompileCost is how much SDK gas is charged *per byte* for compiling WASM code.
-	// Benchmarks and numbers were discussed in: https://github.com/CosmWasm/wasmd/pull/634#issuecomment-938056803
+	// Benchmarks and numbers were discussed in: https://github.com/cosmwasgo/cosmwasgo/pull/634#issuecomment-938056803
 	DefaultCompileCost uint64 = 3
 	// DefaultEventAttributeDataCost is how much SDK gas is charged *per byte* for attribute data in events.
 	// This is used with len(key) + len(value)
@@ -62,7 +62,7 @@ const (
 )
 
 // default: 0.15 gas.
-// see https://github.com/CosmWasm/wasmd/pull/898#discussion_r937727200
+// see https://github.com/cosmwasgo/cosmwasgo/pull/898#discussion_r937727200
 var defaultPerByteUncompressCost = wasmvmtypes.UFraction{
 	Numerator:   15,
 	Denominator: 100,
@@ -103,7 +103,7 @@ type WasmGasRegisterConfig struct {
 	// InstanceCostDiscount is a discounted version of InstanceCost. It is charged whenever
 	// we can reasonably assume that a contract is in one of the in-memory caches. E.g.
 	// when the contract is pinned or we send a reply to a contract that was executed before.
-	// See also https://github.com/CosmWasm/wasmd/issues/1798 for more thinking around
+	// See also https://github.com/cosmwasgo/cosmwasgo/issues/1798 for more thinking around
 	// discount cases.
 	InstanceCostDiscount storetypes.Gas
 	// CompileCosts costs to persist and "compile" a new wasm contract

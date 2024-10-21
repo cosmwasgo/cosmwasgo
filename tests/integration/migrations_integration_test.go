@@ -13,9 +13,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/address"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/CosmWasm/wasmd/app"
-	v2 "github.com/CosmWasm/wasmd/x/wasm/migrations/v2"
-	"github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/cosmwasgo/cosmwasgo/app"
+	v2 "github.com/cosmwasgo/cosmwasgo/x/wasm/migrations/v2"
+	"github.com/cosmwasgo/cosmwasgo/x/wasm/types"
 )
 
 func TestModuleMigrations(t *testing.T) {
@@ -40,7 +40,7 @@ func TestModuleMigrations(t *testing.T) {
 				}
 
 				// upgrade code shipped with v0.40
-				// https://github.com/CosmWasm/wasmd/blob/v0.40.0/app/upgrades.go#L66
+				// https://github.com/cosmwasgo/cosmwasgo/blob/v0.40.0/app/upgrades.go#L66
 				sp, _ := wasmApp.ParamsKeeper.GetSubspace(types.ModuleName)
 				keyTable := v2.ParamKeyTable()
 				if !sp.HasKeyTable() {
@@ -63,7 +63,7 @@ func TestModuleMigrations(t *testing.T) {
 				}
 
 				// upgrade code shipped with v0.40
-				// https://github.com/CosmWasm/wasmd/blob/v0.40.0/app/upgrades.go#L66
+				// https://github.com/cosmwasgo/cosmwasgo/blob/v0.40.0/app/upgrades.go#L66
 				sp, _ := wasmApp.ParamsKeeper.GetSubspace(types.ModuleName)
 				keyTable := v2.ParamKeyTable()
 				if !sp.HasKeyTable() {

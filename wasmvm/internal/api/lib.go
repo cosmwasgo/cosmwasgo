@@ -153,6 +153,7 @@ func Unpin(cache Cache, checksum []byte) error {
 }
 
 func AnalyzeCode(cache Cache, checksum []byte) (*types.AnalysisReport, error) {
+
 	cs := makeView(checksum)
 	defer runtime.KeepAlive(checksum)
 	errmsg := uninitializedUnmanagedVector()

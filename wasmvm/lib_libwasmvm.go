@@ -668,7 +668,7 @@ func (vm *VM) IBCDestinationCallback(
 func compileCost(code WasmCode) uint64 {
 	// CostPerByte is how much CosmWasm gas is charged *per byte* for compiling WASM code.
 	// Benchmarks and numbers (in SDK Gas) were discussed in:
-	// https://github.com/CosmWasm/wasmd/pull/634#issuecomment-938056803
+	// https://github.com/cosmwasgo/cosmwasgo/pull/634#issuecomment-938056803
 	const CostPerByte uint64 = 3 * 140_000
 
 	return CostPerByte * uint64(len(code))

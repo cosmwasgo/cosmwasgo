@@ -226,7 +226,7 @@ type Array[C any] []C
 type MigrateInfo struct {
 	// Address of the sender.
 	//
-	// This is the `sender` field from [`MsgMigrateContract`](https://github.com/CosmWasm/wasmd/blob/v0.53.0/proto/cosmwasm/wasm/v1/tx.proto#L217-L233).
+	// This is the `sender` field from [`MsgMigrateContract`](https://github.com/cosmwasgo/cosmwasgo/blob/v0.53.0/proto/cosmwasm/wasm/v1/tx.proto#L217-L233).
 	Sender HumanAddress `json:"sender"`
 	// Migrate version of the previous contract. It's optional, since
 	// adding the version number to the binary is not a mandatory feature.

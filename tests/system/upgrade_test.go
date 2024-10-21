@@ -117,7 +117,7 @@ func FetchExecutable(t *testing.T, version string) string {
 	t.Logf("+++ version not in cache, downloading from github")
 
 	// then download from GH releases: only works with Linux currently as we are not publishing OSX binaries
-	const releaseUrl = "https://github.com/CosmWasm/wasmd/releases/download/%s/wasmd-%s-linux-amd64.tar.gz"
+	const releaseUrl = "https://github.com/cosmwasgo/cosmwasgo/releases/download/%s/wasmd-%s-linux-amd64.tar.gz"
 	destDir := t.TempDir()
 	rsp, err := http.Get(fmt.Sprintf(releaseUrl, version, version))
 	require.NoError(t, err)

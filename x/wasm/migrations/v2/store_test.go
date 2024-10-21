@@ -17,9 +17,9 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	"github.com/CosmWasm/wasmd/x/wasm"
-	v2 "github.com/CosmWasm/wasmd/x/wasm/migrations/v2"
-	"github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/cosmwasgo/cosmwasgo/x/wasm"
+	v2 "github.com/cosmwasgo/cosmwasgo/x/wasm/migrations/v2"
+	"github.com/cosmwasgo/cosmwasgo/x/wasm/types"
 )
 
 func TestMigrate(t *testing.T) {
