@@ -16,5 +16,8 @@ jobs:
           go-version: 1.23.2
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: downlaod wasmvm
+        run: wget https://github.com/CosmWasm/wasmvm/releases/download/${WASMVM_VERSION}/libwasmvm_muslc.x86_64.a -O /lib/libwasmvm_muslc.x86_64.a
+
       - name: Test
         run: make test
