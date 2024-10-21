@@ -121,7 +121,8 @@ test: test-unit
 test-all: test-race test-cover test-system
 
 test-unit:
-	@VERSION=$(VERSION) go test -mod=readonly -ldflags '-linkmode=external -extldflags "-Wl,-z,muldefs -static"' -tags='ledger test_ledger_mock' ./...
+	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./...
+
 test-race:
 	@VERSION=$(VERSION) go test -mod=readonly -race -tags='ledger test_ledger_mock' ./...
 
