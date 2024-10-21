@@ -1,4 +1,4 @@
-# CosmWasmGo
+# CosmWasGo
 
 A project to create a CosmWasm-compatible `x/wasm` module without the Rust/Cgo complications.
 
