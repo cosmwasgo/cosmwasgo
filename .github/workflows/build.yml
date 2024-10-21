@@ -1,0 +1,16 @@
+on: [push, pull_request]
+name: Build
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: build wasmd
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.23.2
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Build
+        run: make build

@@ -58,7 +58,7 @@ There are four primary tasks involved in achieving the goal of making a CosmWasm
 
 The WASM VM engine we will use is a minimal dependency, pure Go implementation: [Wazero](https://github.com/tetratelabs/wazero). This engine is compatible with version 2 of the WASM specification.
 
-### wasmvm
+### integrate wasmvm
 
 Currently, `wasmvm` is mostly glue that plugs `x/wasmd` into an interface for Wasmer. It doesn't have a very large API, and for the basic features—execution, storage of code, IBC sockets, and channels—there is very little on the Rust side that is complicated.
 
