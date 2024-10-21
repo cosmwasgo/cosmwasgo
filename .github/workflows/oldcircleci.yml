@@ -28,12 +28,15 @@ jobs:
 
       - name: Cache go modules
         run: make go-mod-cache
+        shell: bash # Add this line
 
       - name: Build
         run: make build
+        shell: bash # Add this line
 
       - name: Git garbage collection
         run: git gc
+        shell: bash # Add this line
 
   tidy-go:
     runs-on: ubuntu-latest
@@ -52,6 +55,7 @@ jobs:
             git status && git --no-pager diff
             exit 1
           fi
+        shell: bash # Add this line
 
   test-cover:
     runs-on: ubuntu-latest
@@ -98,6 +102,7 @@ jobs:
               -coverprofile="profiles/$id.out" -covermode=atomic \
               -tags='ledger test_ledger_mock' "$pkg" | tee "logs/$id-$RANDOM.log"
           done
+        shell: bash # Add this line
 
       - name: Upload Test Logs
         if: ${{ always() }}
@@ -135,9 +140,11 @@ jobs:
           find artifacts -name '*.out' | while read -r prof; do
             tail -n +2 "$prof" >> coverage.txt
           done
+        shell: bash # Add this line
 
       - name: Upload coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash) -f coverage.txt
+        shell: bash # This line ensures the inline script runs with bash
 
   test-system:
     runs-on: ubuntu-latest
@@ -157,12 +164,14 @@ jobs:
 
       - name: Build and run system tests
         run: make test-system
+        shell: bash # Add this line
 
       - name: Store system test artifacts
         if: failure()
         run: |
           mkdir -p /tmp/system-test-workspace
           mv ./tests/system/testnet /tmp/system-test-workspace
+        shell: bash # Add this line
 
       - name: Upload system test artifacts
         if: failure()
@@ -191,11 +200,13 @@ jobs:
         run: |
           cd ./x/wasm/keeper
           go test -bench .
+        shell: bash # Add this line
 
       - name: Benchmarks to compare with native modules
         run: |
           cd ./benchmarks
           go test -bench .
+        shell: bash # Add this line
 
   simulations:
     runs-on: ubuntu-latest
@@ -208,6 +219,7 @@ jobs:
       - name: Run simulations
         run: |
           make test-sim-deterministic test-sim-multi-seed-short test-sim-import-export
+        shell: bash # Add this line
 
       - name: Upload simulation artifacts
         uses: actions/upload-artifact@v3
@@ -223,6 +235,7 @@ jobs:
 
       - name: Build Docker artifact
         run: docker build --pull -t "cosmwasm/wasmd:${{ github.sha }}" .
+        shell: bash # Add this line
 
       - name: Ensure libwasmvm version is correct
         run: |
@@ -234,6 +247,7 @@ jobs:
             echo "Mismatch of wasmvm versions detected"
             exit 1
           fi
+        shell: bash # Add this line
 
       - name: Push application Docker image to docker hub
         if: github.ref == 'refs/heads/main'
@@ -245,6 +259,7 @@ jobs:
           echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
           docker push cosmwasm/wasmd:latest
           docker logout
+        shell: bash # Add this line
 
   docker-tagged:
     runs-on: ubuntu-latest
@@ -254,6 +269,7 @@ jobs:
 
       - name: Build Docker artifact
         run: docker build --pull -t "cosmwasm/wasmd:${{ github.ref_name }}" .
+        shell: bash # Add this line
 
       - name: Push application Docker image to docker hub
         env:
@@ -263,6 +279,7 @@ jobs:
           echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
           docker push "cosmwasm/wasmd:${{ github.ref_name }}"
           docker logout
+        shell: bash # Add this line
 
   release-tagged:
     runs-on: ubuntu-latest
