@@ -21,18 +21,6 @@ jobs:
         with:
           go-version: "1.23"
 
-      - name: Restore Go modules cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ${{ env.GOPATH }}/pkg/mod
-          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
-
-      - name: Cache go modules
-        run: make go-mod-cache
-        shell: bash
-
       - name: Build
         run: make build
         shell: bash
@@ -77,14 +65,13 @@ jobs:
         with:
           go-version: "1.23"
 
-      - name: Run tests with coverage
+      - name: Run tests
         run: |
           set -euo pipefail
 
           export GORACE=halt_on_error=1
           export VERSION="$(git describe --tags --long | sed 's/v\(.*\)/\1/')"
           export GO111MODULE=on
-          mkdir -p logs profiles
 
           # Get the list of packages into an array
           readarray -t PACKAGES_ARRAY < <(go list ./... | grep -v '/simulation')
@@ -94,38 +81,22 @@ jobs:
           TOTAL_PARTS=4
           PART=${{ matrix.partition }}
 
-          PACKAGES_PER_PART=$(( (TOTAL_PACKAGES + TOTAL_PARTS - 1) / TOTAL_PARTS ))
-          START_INDEX=$(( (PART - 1) * PACKAGES_PER_PART ))
-          END_INDEX=$(( START_INDEX + PACKAGES_PER_PART ))
-          if [ "$END_INDEX" -gt "$TOTAL_PACKAGES" ]; then
-            END_INDEX=$TOTAL_PACKAGES
-          fi
-          PACKAGES_PER_PART=$(( END_INDEX - START_INDEX ))
+            PACKAGES_PER_PART=$(( (TOTAL_PACKAGES + TOTAL_PARTS - 1) / TOTAL_PARTS ))
+            START_INDEX=$(( (PART - 1) * PACKAGES_PER_PART ))
+            END_INDEX=$(( START_INDEX + PACKAGES_PER_PART ))
+            if [ "$END_INDEX" -gt "$TOTAL_PACKAGES" ]; then
+              END_INDEX=$TOTAL_PACKAGES
+            fi
+            PACKAGES_PER_PART=$(( END_INDEX - START_INDEX ))
 
-          # Get the packages for this partition
-          PART_PKGS=("${PACKAGES_ARRAY[@]:$START_INDEX:$PACKAGES_PER_PART}")
+            # Get the packages for this partition
+            PART_PKGS=("${PACKAGES_ARRAY[@]:$START_INDEX:$PACKAGES_PER_PART}")
 
-          for pkg in "${PART_PKGS[@]}"; do
-            id=$(echo "$pkg" | sed 's|[/.]|_|g')
-            go test -mod=readonly -timeout 8m -race \
-              -coverprofile="profiles/$id.out" -covermode=atomic \
-              -tags='ledger test_ledger_mock' "$pkg" | tee "logs/$id-$RANDOM.log"
-          done
-        shell: bash
-
-      - name: Upload Test Logs
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-logs-${{ matrix.partition }}
-          path: logs/
-
-      - name: Upload Coverage Profiles
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-profiles-${{ matrix.partition }}
-          path: profiles/
-          retention-days: 1
+            for pkg in "${PART_PKGS[@]}"; do
+              go test -mod=readonly -timeout 8m -race \
+                -tags='ledger test_ledger_mock' "$pkg"
+            done
+          shell: bash
 
   upload-coverage:
     runs-on: ubuntu-latest
