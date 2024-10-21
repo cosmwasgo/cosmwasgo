@@ -64,39 +64,39 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Restore Go modules cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/go-build
-            ${{ env.GOPATH }}/pkg/mod
-          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
-
       - name: Run tests with coverage
         run: |
+          set -euo pipefail
+
           export GORACE=halt_on_error=1
           export VERSION="$(git describe --tags --long | sed 's/v\(.*\)/\1/')"
           export GO111MODULE=on
           mkdir -p logs profiles
 
-          # Get the list of packages
-          PKGS=$(go list ./... | grep -v '/simulation')
+          # Get the list of packages into an array
+          readarray -t PACKAGES_ARRAY < <(go list ./... | grep -v '/simulation')
+          TOTAL_PACKAGES=${#PACKAGES_ARRAY[@]}
+
           # Split the packages into chunks
           TOTAL_PARTS=4
           PART=${{ matrix.partition }}
-          PACKAGES_ARRAY=($PKGS)
-          TOTAL_PACKAGES=${#PACKAGES_ARRAY[@]}
+
           PACKAGES_PER_PART=$(( (TOTAL_PACKAGES + TOTAL_PARTS - 1) / TOTAL_PARTS ))
           START_INDEX=$(( (PART - 1) * PACKAGES_PER_PART ))
           END_INDEX=$(( START_INDEX + PACKAGES_PER_PART ))
-          if [ $END_INDEX -gt $TOTAL_PACKAGES ]; then
+          if [ "$END_INDEX" -gt "$TOTAL_PACKAGES" ]; then
             END_INDEX=$TOTAL_PACKAGES
           fi
-          PART_PKGS="${PACKAGES_ARRAY[@]:$START_INDEX:$PACKAGES_PER_PART}"
+          PACKAGES_PER_PART=$(( END_INDEX - START_INDEX ))
 
-          for pkg in $PART_PKGS; do
+          # Get the packages for this partition
+          PART_PKGS=("${PACKAGES_ARRAY[@]:$START_INDEX:$PACKAGES_PER_PART}")
+
+          for pkg in "${PART_PKGS[@]}"; do
             id=$(echo "$pkg" | sed 's|[/.]|_|g')
-            go test -mod=readonly -timeout 8m -race -coverprofile=profiles/$id.out -covermode=atomic -tags='ledger test_ledger_mock' "$pkg" | tee "logs/$id-$RANDOM.log"
+            go test -mod=readonly -timeout 8m -race \
+              -coverprofile="profiles/$id.out" -covermode=atomic \
+              -tags='ledger test_ledger_mock' "$pkg" | tee "logs/$id-$RANDOM.log"
           done
 
       - name: Upload Test Logs
