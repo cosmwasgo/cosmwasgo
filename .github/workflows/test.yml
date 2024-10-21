@@ -1,5 +1,7 @@
 on: [push, pull_request]
 name: Test
+branches:
+      - main
 jobs:
   test-nocache:
     strategy:
