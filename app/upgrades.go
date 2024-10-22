@@ -99,7 +99,7 @@ func setupLegacyKeyTables(k *paramskeeper.Keeper) {
 			keyTable = crisistypes.ParamKeyTable() //nolint:staticcheck
 			// wasm
 		case wasmtypes.ModuleName:
-			keyTable = v2.ParamKeyTable() //nolint:staticcheck
+			keyTable = v2.ParamKeyTable()
 		default:
 			continue
 		}
