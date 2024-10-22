@@ -1,10 +1,10 @@
 package types
 
 import (
-	wasmvm "github.com/CosmWasm/wasmvm/v2"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
-
 	storetypes "cosmossdk.io/store/types"
+
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 )
 
 // DefaultMaxQueryStackSize maximum size of the stack of recursive queries a contract can make

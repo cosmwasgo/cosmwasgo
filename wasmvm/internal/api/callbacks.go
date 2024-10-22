@@ -41,7 +41,7 @@ import (
 	"runtime/debug"
 	"unsafe"
 
-	"github.com/CosmWasm/wasmvm/v2/types"
+	"github.com/CosmWasm/wasmd/wasmvm/v2/types"
 )
 
 // Note: we have to include all exports in the same file (at least since they both import bindings.h),

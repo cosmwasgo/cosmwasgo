@@ -12,6 +12,7 @@ import (
 )
 
 func prepareCleanup(t *testing.T) {
+	t.Helper()
 	// preserve current Bech32 settings and restore them after test completion
 	x, y := sdk.GetConfig().GetBech32AccountAddrPrefix(), sdk.GetConfig().GetBech32AccountPubPrefix()
 	c := sdk.IsAddrCacheEnabled()

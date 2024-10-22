@@ -26,6 +26,7 @@ const firstCodeID = 1
 
 // ensure store code returns the expected response
 func assertStoreCodeResponse(t *testing.T, data []byte, expected uint64) {
+	t.Helper()
 	var pStoreResp types.MsgStoreCodeResponse
 	require.NoError(t, pStoreResp.Unmarshal(data))
 	require.Equal(t, pStoreResp.CodeID, expected)
@@ -33,6 +34,7 @@ func assertStoreCodeResponse(t *testing.T, data []byte, expected uint64) {
 
 // ensure execution returns the expected data
 func assertExecuteResponse(t *testing.T, data, expected []byte) {
+	t.Helper()
 	var pExecResp types.MsgExecuteContractResponse
 	require.NoError(t, pExecResp.Unmarshal(data))
 	require.Equal(t, pExecResp.Data, expected)
@@ -40,6 +42,7 @@ func assertExecuteResponse(t *testing.T, data, expected []byte) {
 
 // ensures this returns a valid bech32 address and returns it
 func parseInitResponse(t *testing.T, data []byte) string {
+	t.Helper()
 	var pInstResp types.MsgInstantiateContractResponse
 	require.NoError(t, pInstResp.Unmarshal(data))
 	require.NotEmpty(t, pInstResp.Address)
@@ -145,7 +148,8 @@ type reflectCustomMsg struct {
 // fromReflectRawMsg decodes msg.Data to an sdk.Msg using proto Any and json encoding.
 // this needs to be registered on the Encoders
 func fromReflectRawMsg(cdc codec.Codec) wasmKeeper.CustomEncoder {
-	return func(_sender sdk.AccAddress, msg json.RawMessage) ([]sdk.Msg, error) {
+	// the first argument is the sender, but we don't need it for this test
+	return func(_ sdk.AccAddress, msg json.RawMessage) ([]sdk.Msg, error) {
 		var custom reflectCustomMsg
 		err := json.Unmarshal(msg, &custom)
 		if err != nil {

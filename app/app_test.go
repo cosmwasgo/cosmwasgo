@@ -70,7 +70,7 @@ func TestGetMaccPerms(t *testing.T) {
 func TestMergedRegistry(t *testing.T) {
 	r, err := proto.MergedRegistry()
 	require.NoError(t, err)
-	require.Greater(t, r.NumFiles(), 0)
+	require.Positive(t, r.NumFiles())
 }
 
 func TestProtoAnnotations(t *testing.T) {

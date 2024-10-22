@@ -4,11 +4,12 @@ import (
 	"context"
 	"testing"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
 )
 
@@ -198,7 +199,7 @@ func TestNewCustomEvents(t *testing.T) {
 			if spec.isError {
 				assert.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, spec.exp, gotEvent)
 			}
 		})
@@ -274,7 +275,7 @@ func TestNewWasmModuleEvent(t *testing.T) {
 			if spec.isError {
 				assert.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, spec.exp, gotEvent)
 			}
 		})

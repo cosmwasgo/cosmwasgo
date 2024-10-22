@@ -1,9 +1,9 @@
 package types
 
 import (
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
-
 	errorsmod "cosmossdk.io/errors"
+
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 )
 
 // Codes for wasm contract errors

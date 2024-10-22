@@ -53,6 +53,7 @@ func TestCountTxDecorator(t *testing.T) {
 				ctx.MultiStore().GetKVStore(keyWasm).Set(types.TXCounterPrefix, bz)
 			},
 			nextAssertAnte: func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
+				t.Helper()
 				gotCounter, ok := types.TXCounter(ctx)
 				require.True(t, ok)
 				assert.Equal(t, uint32(1<<24+2), gotCounter)
@@ -64,6 +65,7 @@ func TestCountTxDecorator(t *testing.T) {
 		},
 		"old height counter replaced": {
 			setupDB: func(t *testing.T, ctx sdk.Context) {
+				t.Helper()
 				previousHeight := byte(myCurrentBlockHeight - 1)
 				bz := []byte{0, 0, 0, 0, 0, 0, 0, previousHeight, 0, 0, 0, 1}
 				ctx.MultiStore().GetKVStore(keyWasm).Set(types.TXCounterPrefix, bz)
@@ -80,6 +82,7 @@ func TestCountTxDecorator(t *testing.T) {
 		},
 		"simulation not persisted": {
 			setupDB: func(t *testing.T, ctx sdk.Context) {
+				t.Helper()
 			},
 			simulate: true,
 			nextAssertAnte: func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
@@ -113,7 +116,7 @@ func TestCountTxDecorator(t *testing.T) {
 func TestLimitSimulationGasDecorator(t *testing.T) {
 	var (
 		hundred storetypes.Gas = 100
-		zero    storetypes.Gas = 0
+		zero    storetypes.Gas
 	)
 	specs := map[string]struct {
 		customLimit *storetypes.Gas
