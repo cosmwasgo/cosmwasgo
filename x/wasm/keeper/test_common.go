@@ -102,8 +102,9 @@ var moduleBasics = module.NewBasicManager(
 	vesting.AppModuleBasic{},
 )
 
-func MakeTestCodec(t testing.TB) codec.Codec {
-	return MakeEncodingConfig(t).Codec
+func MakeTestCodec(tb testing.TB) codec.Codec {
+	tb.Helper()
+	return MakeEncodingConfig(tb).Codec
 }
 
 func MakeEncodingConfig(_ testing.TB) moduletestutil.TestEncodingConfig {

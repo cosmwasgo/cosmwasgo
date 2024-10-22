@@ -12,6 +12,7 @@ This translates to lower costs for projects due to easier readability, access to
 
 The first apparent blocker was the fact that the go compiler kept looking for the wrong shared object files.  After some work, we realized that if it works on one platform, that is good enough for our purposes.  So, as of today, mac seems working on the old Go-C-Rust codebase.  That'll do.  Our CI system will be "god" here.
 
+- [x] make gas errors return integers for easy fixes instead of hex
 - [x] bring all libraries up to date with current cosmos releases
 - [ ] fully lint wasmd and wasmvm
 - [ ] implement wasmer at the wasmvm level

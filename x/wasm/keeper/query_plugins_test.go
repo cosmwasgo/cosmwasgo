@@ -240,9 +240,8 @@ func TestBankQuerierMetadata(t *testing.T) {
 	mock := bankKeeperMock{GetDenomMetadataFn: func(ctx context.Context, denom string) (banktypes.Metadata, bool) {
 		if denom == "utest" {
 			return metadata, true
-		} else {
-			return banktypes.Metadata{}, false
 		}
+		return banktypes.Metadata{}, false
 	}}
 
 	ctx := sdk.Context{}
@@ -500,7 +499,8 @@ func TestCodeInfoWasmQuerier(t *testing.T) {
 				CodeInfo: &wasmvmtypes.CodeInfoQuery{CodeID: 1},
 			},
 			mock: mockWasmQueryKeeper{
-				GetCodeInfoFn: func(ctx context.Context, codeID uint64) *types.CodeInfo {
+				// GetCodeInfoFn has a context and CodeID
+				GetCodeInfoFn: func(_ context.Context, _ uint64) *types.CodeInfo {
 					return nil
 				},
 			},
@@ -548,7 +548,7 @@ func TestQueryErrors(t *testing.T) {
 	}
 	for name, spec := range specs {
 		t.Run(name, func(t *testing.T) {
-			mock := keeper.WasmVMQueryHandlerFn(func(ctx sdk.Context, caller sdk.AccAddress, request wasmvmtypes.QueryRequest) ([]byte, error) {
+			mock := keeper.WasmVMQueryHandlerFn(func(_ sdk.Context, caller sdk.AccAddress, request wasmvmtypes.QueryRequest) ([]byte, error) {
 				return nil, spec.src
 			})
 			ms := store.NewCommitMultiStore(dbm.NewMemDB(), log.NewTestLogger(t), storemetrics.NewNoOpMetrics())
