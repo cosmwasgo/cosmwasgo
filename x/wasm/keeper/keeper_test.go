@@ -2371,7 +2371,10 @@ func TestCoinBurnerPruneBalances(t *testing.T) {
 		expErr      *errorsmod.Error
 	}{
 		"vesting account - all removed": {
-			setupAcc:    func(t *testing.T, ctx sdk.Context) sdk.AccountI { return myVestingAccount },
+			setupAcc: func(t *testing.T, ctx sdk.Context) sdk.AccountI {
+				t.Helper()
+				return myVestingAccount
+			},
 			expBalances: sdk.NewCoins(),
 			expHandled:  true,
 		},

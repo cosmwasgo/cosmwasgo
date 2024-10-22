@@ -8,9 +8,9 @@ run:
 linters:
   disable-all: true
   enable:
+    - copyloopvar
     - errcheck
     - dogsled
-    - exportloopref
     - goconst
     - gocritic
     - gci
@@ -28,6 +28,7 @@ linters:
     - stylecheck
     - typecheck
     - thelper # too many positives with table tests that have custom setup(*testing.T)
+    - testifylint
     - unconvert
     - unused
 

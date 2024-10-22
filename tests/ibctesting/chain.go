@@ -176,6 +176,7 @@ func NewTestChain(t *testing.T, coord *Coordinator, appFactory ChainAppFactory, 
 // CONTRACT: Validator array must be provided in the order expected by Tendermint.
 // i.e. sorted first by power and then lexicographically by address.
 func NewTestChainWithValSet(t *testing.T, coord *Coordinator, appFactory ChainAppFactory, chainID string, valSet *cmttypes.ValidatorSet, signers map[string]cmttypes.PrivValidator, opts ...wasmkeeper.Option) *TestChain {
+	t.Helper()
 	genAccs := []authtypes.GenesisAccount{}
 	genBals := []banktypes.Balance{}
 	senderAccs := []SenderAccount{}
