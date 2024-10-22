@@ -646,7 +646,8 @@ func GetCmdQueryParams() *cobra.Command {
 		Use:   "params",
 		Short: "Query the current wasm parameters",
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		// we pass in an empty args array to satisfy cobra
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err

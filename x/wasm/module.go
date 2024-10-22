@@ -242,35 +242,44 @@ func AddModuleInitFlags(startCmd *cobra.Command) {
 	startCmd.PreRunE = chainPreRuns(preCheck, startCmd.PreRunE)
 }
 
-// ReadWasmConfig reads the wasm specifig configuration
+// ReadWasmConfig reads the wasm specific configuration
 func ReadWasmConfig(opts servertypes.AppOptions) (types.WasmConfig, error) {
 	cfg := types.DefaultWasmConfig()
 	var err error
+
 	if v := opts.Get(flagWasmMemoryCacheSize); v != nil {
-		if cfg.MemoryCacheSize, err = cast.ToUint32E(v); err != nil {
+		cfg.MemoryCacheSize, err = cast.ToUint32E(v)
+		if err != nil {
 			return cfg, err
 		}
 	}
+
 	if v := opts.Get(flagWasmQueryGasLimit); v != nil {
-		if cfg.SmartQueryGasLimit, err = cast.ToUint64E(v); err != nil {
+		cfg.SmartQueryGasLimit, err = cast.ToUint64E(v)
+		if err != nil {
 			return cfg, err
 		}
 	}
+
 	if v := opts.Get(flagWasmSimulationGasLimit); v != nil {
-		if raw, ok := v.(string); !ok || raw != "" {
-			limit, err := cast.ToUint64E(v) // non empty string set
+		raw, ok := v.(string)
+		if !ok || raw != "" {
+			limit, err := cast.ToUint64E(v) // non-empty string set
 			if err != nil {
 				return cfg, err
 			}
 			cfg.SimulationGasLimit = &limit
 		}
 	}
-	// attach contract debugging to global "trace" flag
+
+	// Attach contract debugging to global "trace" flag
 	if v := opts.Get(server.FlagTrace); v != nil {
-		if cfg.ContractDebugMode, err = cast.ToBoolE(v); err != nil {
+		cfg.ContractDebugMode, err = cast.ToBoolE(v)
+		if err != nil {
 			return cfg, err
 		}
 	}
+
 	return cfg, nil
 }
 

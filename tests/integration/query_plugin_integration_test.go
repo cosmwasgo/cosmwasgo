@@ -130,6 +130,7 @@ func TestReflectStargateQuery(t *testing.T) {
 func TestReflectGrpcQuery(t *testing.T) {
 	queryPlugins := (*reflectPlugins()).Merge(&wasmkeeper.QueryPlugins{
 		Grpc: func(ctx sdk.Context, request *wasmvmtypes.GrpcQuery) (proto.Message, error) {
+			t.Helper()
 			if request.Path == "cosmos.bank.v1beta1.Query/AllBalances" {
 				return &banktypes.QueryAllBalancesResponse{
 					Balances: sdk.NewCoins(),
@@ -574,6 +575,7 @@ func TestDistributionQuery(t *testing.T) {
 		},
 		"delegator address -  withdrawal addr set": {
 			setup: func(t *testing.T, ctx sdk.Context) sdk.Context {
+				t.Helper()
 				require.NoError(t, keepers.DistKeeper.SetWithdrawAddr(ctx, delegator, otherAddr))
 				return ctx
 			},
@@ -606,6 +608,7 @@ func TestDistributionQuery(t *testing.T) {
 				DelegationRewards: &wasmvmtypes.DelegationRewardsQuery{DelegatorAddress: delegator.String(), ValidatorAddress: val1Addr.String()},
 			},
 			assert: func(t *testing.T, d []byte) {
+				t.Helper()
 				var rsp wasmvmtypes.DelegationRewardsResponse
 				mustUnmarshal(t, d, &rsp)
 				expRewards := []wasmvmtypes.DecCoin{{Amount: "45000000.000000000000000000", Denom: "stake"}}
@@ -782,13 +785,17 @@ func TestIBCListChannelsQuery(t *testing.T) {
 
 	withChannelsStored := func(portID string, channels ...channeltypes.Channel) func(t *testing.T, ctx sdk.Context) sdk.Context {
 		return func(t *testing.T, ctx sdk.Context) sdk.Context {
+			t.Helper()
 			for i, v := range channels {
 				keepers.IBCKeeper.ChannelKeeper.SetChannel(ctx, portID, fmt.Sprintf("channel-%d", i), v)
 			}
 			return ctx
 		}
 	}
-	noopSetup := func(t *testing.T, ctx sdk.Context) sdk.Context { return ctx }
+	noopSetup := func(t *testing.T, ctx sdk.Context) sdk.Context {
+		t.Helper()
+		return ctx
+	}
 
 	specs := map[string]struct {
 		setup    func(t *testing.T, ctx sdk.Context) sdk.Context
@@ -802,6 +809,7 @@ func TestIBCListChannelsQuery(t *testing.T) {
 			setup:    withChannelsStored(myIBCPortID, myExampleChannels...),
 			query:    &wasmvmtypes.IBCQuery{ListChannels: &wasmvmtypes.ListChannelsQuery{}},
 			assert: func(t *testing.T, d []byte) {
+				t.Helper()
 				rsp := unmarshalReflect[wasmvmtypes.ListChannelsResponse](t, d)
 				exp := wasmvmtypes.ListChannelsResponse{Channels: []wasmvmtypes.IBCChannel{
 					{
@@ -832,6 +840,7 @@ func TestIBCListChannelsQuery(t *testing.T) {
 			setup:    withChannelsStored("OtherPortID", myExampleChannels...),
 			query:    &wasmvmtypes.IBCQuery{ListChannels: &wasmvmtypes.ListChannelsQuery{PortID: "OtherPortID"}},
 			assert: func(t *testing.T, d []byte) {
+				t.Helper()
 				rsp := unmarshalReflect[wasmvmtypes.ListChannelsResponse](t, d)
 				exp := wasmvmtypes.ListChannelsResponse{Channels: []wasmvmtypes.IBCChannel{
 					{
@@ -862,6 +871,7 @@ func TestIBCListChannelsQuery(t *testing.T) {
 			setup:    withChannelsStored(myIBCPortID, myExampleChannels...),
 			query:    &wasmvmtypes.IBCQuery{ListChannels: &wasmvmtypes.ListChannelsQuery{}},
 			assert: func(t *testing.T, d []byte) {
+				t.Helper()
 				rsp := unmarshalReflect[wasmvmtypes.ListChannelsResponse](t, d)
 				assert.Empty(t, rsp.Channels)
 			},
@@ -871,6 +881,7 @@ func TestIBCListChannelsQuery(t *testing.T) {
 			setup:    noopSetup,
 			query:    &wasmvmtypes.IBCQuery{ListChannels: &wasmvmtypes.ListChannelsQuery{}},
 			assert: func(t *testing.T, d []byte) {
+				t.Helper()
 				rsp := unmarshalReflect[wasmvmtypes.ListChannelsResponse](t, d)
 				assert.Empty(t, rsp.Channels)
 			},
@@ -902,6 +913,7 @@ func TestIBCListChannelsQuery(t *testing.T) {
 }
 
 func unmarshalReflect[T any](t *testing.T, d []byte) T {
+	t.Helper()
 	var v T
 	mustUnmarshal(t, d, &v)
 	return v
