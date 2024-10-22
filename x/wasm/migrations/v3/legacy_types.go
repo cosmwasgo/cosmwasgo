@@ -880,7 +880,7 @@ func (m *AccessConfig) Unmarshal(dAtA []byte) error {
 	return nil
 }
 
-func (m *Params) Unmarshal(dAtA []byte) error {
+func (p *Params) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -938,7 +938,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.CodeUploadAccess.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := p.CodeUploadAccess.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -946,7 +946,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field InstantiateDefaultPermission", wireType)
 			}
-			m.InstantiateDefaultPermission = 0
+			p.InstantiateDefaultPermission = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTypes
@@ -956,7 +956,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.InstantiateDefaultPermission |= AccessType(b&0x7F) << shift
+				p.InstantiateDefaultPermission |= AccessType(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -983,7 +983,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 	return nil
 }
 
-func (m *CodeInfo) Unmarshal(dAtA []byte) error {
+func (p *CodeInfo) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1041,9 +1041,9 @@ func (m *CodeInfo) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.CodeHash = append(m.CodeHash[:0], dAtA[iNdEx:postIndex]...)
-			if m.CodeHash == nil {
-				m.CodeHash = []byte{}
+			p.CodeHash = append(p.CodeHash[:0], dAtA[iNdEx:postIndex]...)
+			if p.CodeHash == nil {
+				p.CodeHash = []byte{}
 			}
 			iNdEx = postIndex
 		case 2:
@@ -1076,7 +1076,7 @@ func (m *CodeInfo) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Creator = string(dAtA[iNdEx:postIndex])
+			p.Creator = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 5:
 			if wireType != 2 {
@@ -1107,7 +1107,7 @@ func (m *CodeInfo) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.InstantiateConfig.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := p.InstantiateConfig.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

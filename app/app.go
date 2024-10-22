@@ -990,8 +990,8 @@ func (app *WasmApp) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
 	return app.ModuleManager.EndBlock(ctx)
 }
 
-func (a *WasmApp) Configurator() module.Configurator {
-	return a.configurator
+func (app *WasmApp) Configurator() module.Configurator {
+	return app.configurator
 }
 
 // InitChainer application update at chain initialization
