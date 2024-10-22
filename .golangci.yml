@@ -8,12 +8,15 @@ run:
 linters:
   disable-all: true
   enable:
+    - bodyclose
+    - canonicalheader
     - copyloopvar
     - errcheck
     - dogsled
     - goconst
     - gocritic
     - gci
+    - gocheckcompilerdirectives
     - gofumpt
     - gosec
     - gosimple
@@ -22,15 +25,26 @@ linters:
     - maintidx
     - misspell
     - nakedret
+    - nestif
+    - nilerr
     - nolintlint
     - staticcheck
     - revive
     - stylecheck
+    - tenv
     - typecheck
+    - tagalign
+    - tagliatelle
     - thelper # too many positives with table tests that have custom setup(*testing.T)
     - testifylint
+    - perfsprint
+    - promlinter
+    - protogetter
     - unconvert
     - unused
+    - unparam
+    - usestdlibvars
+    - zerologlint
 
 issues:
   exclude-files:
