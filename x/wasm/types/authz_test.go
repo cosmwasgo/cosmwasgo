@@ -780,6 +780,7 @@ func TestValidateCodeGrant(t *testing.T) {
 }
 
 func TestValidateStoreCodeAuthorization(t *testing.T) {
+	t.Helper()
 	validGrant, err := NewCodeGrant([]byte("any_valid_checksum"), &AllowEverybody)
 	require.NoError(t, err)
 	validGrantUpperCase, err := NewCodeGrant([]byte("ANY_VALID_CHECKSUM"), &AllowEverybody)

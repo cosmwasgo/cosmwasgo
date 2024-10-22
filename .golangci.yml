@@ -13,7 +13,7 @@ linters:
     - exportloopref
     - goconst
     - gocritic
-    #    - gci
+    - gci
     - gofumpt
     - gosec
     - gosimple
