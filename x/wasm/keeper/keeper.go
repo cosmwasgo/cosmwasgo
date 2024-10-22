@@ -861,7 +861,7 @@ func (k Keeper) QuerySmart(ctx context.Context, contractAddr sdk.AccAddress, req
 }
 
 func checkAndIncreaseQueryStackSize(ctx context.Context, maxQueryStackSize uint32) (sdk.Context, error) {
-	var queryStackSize uint32 = 0
+	var queryStackSize uint32
 	if size, ok := types.QueryStackSize(ctx); ok {
 		queryStackSize = size
 	}
@@ -879,7 +879,7 @@ func checkAndIncreaseQueryStackSize(ctx context.Context, maxQueryStackSize uint3
 }
 
 func checkAndIncreaseCallDepth(ctx context.Context, maxCallDepth uint32) (sdk.Context, error) {
-	var callDepth uint32 = 0
+	var callDepth uint32
 	if size, ok := types.CallDepth(ctx); ok {
 		callDepth = size
 	}
