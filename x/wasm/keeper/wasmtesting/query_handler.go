@@ -1,9 +1,9 @@
 package wasmtesting
 
 import (
-	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 )
 
 type MockQueryHandler struct {

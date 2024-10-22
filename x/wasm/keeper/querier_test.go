@@ -9,8 +9,6 @@ import (
 	"testing"
 	"time"
 
-	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
-	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -25,6 +23,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper/wasmtesting"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
 )
@@ -524,7 +524,7 @@ func TestQueryContractHistory(t *testing.T) {
 
 			// when
 			q := Querier(keeper)
-			got, gotErr := q.ContractHistory(xCtx, &spec.req) //nolint:gosec
+			got, gotErr := q.ContractHistory(xCtx, &spec.req)
 
 			// then
 			if spec.expErr != nil {
@@ -601,7 +601,7 @@ func TestQueryCodeList(t *testing.T) {
 			}
 			// when
 			q := Querier(keeper)
-			got, gotErr := q.Codes(xCtx, &spec.req) //nolint:gosec
+			got, gotErr := q.Codes(xCtx, &spec.req)
 
 			// then
 			if spec.expErr != nil {
@@ -673,7 +673,7 @@ func TestQueryContractInfo(t *testing.T) {
 	for name, spec := range specs {
 		t.Run(name, func(t *testing.T) {
 			xCtx, _ := ctx.CacheContext()
-			k.mustStoreContractInfo(xCtx, contractAddr, &spec.stored) //nolint:gosec
+			k.mustStoreContractInfo(xCtx, contractAddr, &spec.stored)
 			// when
 			gotRsp, gotErr := querier.ContractInfo(xCtx, spec.src)
 			if spec.expErr {

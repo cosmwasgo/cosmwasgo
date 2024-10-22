@@ -10,7 +10,6 @@ import (
 	"os"
 	"strconv"
 
-	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 
@@ -18,6 +17,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
 )
 

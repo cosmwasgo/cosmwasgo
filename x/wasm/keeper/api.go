@@ -3,11 +3,10 @@ package keeper
 import (
 	"errors"
 
-	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
-	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
 )
 

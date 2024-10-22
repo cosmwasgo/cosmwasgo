@@ -12,8 +12,6 @@ import (
 	"strings"
 	"time"
 
-	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
-	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	"cosmossdk.io/collections"
@@ -31,6 +29,8 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	vestingexported "github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
 
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	"github.com/CosmWasm/wasmd/x/wasm/ioutils"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
 )
@@ -784,7 +784,7 @@ func (k Keeper) appendToContractHistory(ctx context.Context, contractAddr sdk.Ac
 	for _, e := range newEntries {
 		pos++
 		key := types.GetContractCodeHistoryElementKey(contractAddr, pos)
-		if err := store.Set(key, k.cdc.MustMarshal(&e)); err != nil { //nolint:gosec
+		if err := store.Set(key, k.cdc.MustMarshal(&e)); err != nil {
 			return err
 		}
 	}
