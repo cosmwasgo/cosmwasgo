@@ -56,14 +56,14 @@ func initRecurseContract(t *testing.T) (contract sdk.AccAddress, ctx sdk.Context
 
 func TestGasCostOnQuery(t *testing.T) {
 	const (
-		GasNoWork uint64 = 63_987
-		GasWork50 uint64 = 64_234
+		GasNoWork           uint64 = 63_987
+		GasNoWorkDiscounted uint64 = 5_968
+		// Note: about 100 SDK gas (10k CosmWasm gas) for each round of sha256
+		GasWork50           uint64 = 64_234 // this is a little shy of 50k gas - to keep an eye on the limit
+		GasWork50Discounted uint64 = 6_207
 
-		GasNoWorkDiscounted uint64 = 6_011
-		GasWork50Discounted uint64 = 6_247
-
-		GasReturnUnhashed uint64 = 46
-		GasReturnHashed   uint64 = 46
+		GasReturnUnhashed uint64 = 89
+		GasReturnHashed   uint64 = 86
 	)
 	cases := map[string]struct {
 		gasLimit    uint64
@@ -221,12 +221,11 @@ func TestLimitRecursiveQueryGas(t *testing.T) {
 	const (
 		// Note: about 100 SDK gas (10k CosmWasm gas) for each round of sha256
 		GasWork2k uint64 = 76_817 // = SetupContractCost + x // we have 6x gas used in cpu than in the instance
-		ExtraGas  uint64 = 226    // For "recursion 5, lots of work" test
 
-	//	GasWork2kDiscounted uint64 = 18_674
+		GasWork2kDiscounted uint64 = 18_264 + 432
 
-	// This is overhead for calling into a sub-contract
-	//	GasReturnHashed uint64 = 48
+		// This is overhead for calling into a sub-contract
+		GasReturnHashed uint64 = 48 + 132
 	)
 
 	cases := map[string]struct {
@@ -247,7 +246,7 @@ func TestLimitRecursiveQueryGas(t *testing.T) {
 			expectedGas:               GasWork2k,
 		},
 		"recursion 5, lots of work": {
-			gasLimit: 4_000_000,
+			gasLimit: GasWork2k + 5*(GasWork2kDiscounted+GasReturnHashed) + 1,
 			msg: Recurse{
 				Depth: 5,
 				Work:  2000,
@@ -259,13 +258,13 @@ func TestLimitRecursiveQueryGas(t *testing.T) {
 		// this is where we expect an error...
 		// it has enough gas to run 4 times and die on the 5th (4th time dispatching to sub-contract)
 		// however, if we don't charge the cpu gas before sub-dispatching, we can recurse over 20 times
-		"deep recursion, should die on 4th level": {
-			gasLimit: 150_000,
+		"deep recursion, should die on 6th level": {
+			gasLimit: GasWork2k + 5*(GasWork2kDiscounted+GasReturnHashed),
 			msg: Recurse{
-				Depth: 50,
+				Depth: 6,
 				Work:  2000,
 			},
-			expectQueriesFromContract: 4,
+			expectQueriesFromContract: 6,
 			expectOutOfGas:            true,
 		},
 		"very deep recursion, hits recursion limit": {
