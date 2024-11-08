@@ -11,17 +11,23 @@ func isJSONObjectWithTopLevelKey(jsonBytes RawContractMessage, allowedKeys []str
 		return false, err
 	}
 
-	document := map[string]interface{}{}
+	var document interface{}
 	if err := json.Unmarshal(jsonBytes, &document); err != nil {
-		return false, nil // not a map
+		return false, err // invalid JSON
 	}
 
-	if len(document) != 1 {
-		return false, nil // unsupported type
+	// Check if it's a map/object
+	documentMap, ok := document.(map[string]interface{})
+	if !ok {
+		return false, nil // valid JSON but not an object
+	}
+
+	if len(documentMap) != 1 {
+		return false, nil
 	}
 
 	// Loop is executed exactly once
-	for topLevelKey := range document {
+	for topLevelKey := range documentMap {
 		for _, allowedKey := range allowedKeys {
 			if allowedKey == topLevelKey {
 				return true, nil

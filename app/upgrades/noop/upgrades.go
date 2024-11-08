@@ -26,9 +26,9 @@ func NewUpgrade(semver string) upgrades.Upgrade {
 func CreateUpgradeHandler(
 	mm upgrades.ModuleManager,
 	configurator module.Configurator,
-	ak *upgrades.AppKeepers,
+	_ *upgrades.AppKeepers,
 ) upgradetypes.UpgradeHandler {
-	return func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+	return func(ctx context.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 		return mm.RunMigrations(ctx, configurator, fromVM)
 	}
 }

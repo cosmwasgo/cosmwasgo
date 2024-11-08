@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	"github.com/cometbft/cometbft/libs/rand"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,6 +15,8 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 )
 
 func TestContractInfoValidateBasic(t *testing.T) {
@@ -211,7 +212,7 @@ func TestContractInfoMarshalUnmarshal(t *testing.T) {
 	// and sanity check nested any
 	var destExt v1beta1.Proposal
 	require.NoError(t, dest.ReadExtension(&destExt))
-	assert.Equal(t, destExt.GetTitle(), "bar")
+	assert.Equal(t, "bar", destExt.GetTitle())
 }
 
 func TestContractInfoReadExtension(t *testing.T) {

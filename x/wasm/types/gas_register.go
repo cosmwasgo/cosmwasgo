@@ -1,13 +1,13 @@
 package types
 
 import (
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
-
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 )
 
 const (

@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	wasmvm "github.com/CosmWasm/wasmvm/v2"
 	abci "github.com/cometbft/cometbft/abci/types"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
@@ -32,6 +31,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
 )
 
@@ -682,6 +682,7 @@ func setupKeeper(t *testing.T) (*Keeper, sdk.Context) {
 
 	wasmConfig := types.DefaultWasmConfig()
 
+	// NewKeeper is a constructor for Keeper
 	srcKeeper := NewKeeper(
 		encodingConfig.Codec,
 		runtime.NewKVStoreService(keyWasm),
@@ -726,11 +727,11 @@ type MockMsgHandler struct {
 	gotMsg   sdk.Msg
 }
 
-func (m *MockMsgHandler) Handler(msg sdk.Msg) baseapp.MsgServiceHandler {
+func (m *MockMsgHandler) Handler(_ sdk.Msg) baseapp.MsgServiceHandler {
 	return m.Handle
 }
 
-func (m *MockMsgHandler) Handle(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
+func (m *MockMsgHandler) Handle(_ sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 	m.gotCalls++
 	m.gotMsg = msg
 	return m.result, m.err

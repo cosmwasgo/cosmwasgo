@@ -74,10 +74,8 @@ func (p GovAuthorizationPolicy) CanModifyCodeAccessConfig(sdk.AccAddress, sdk.Ac
 // SubMessageAuthorizationPolicy returns new policy with fine-grained gov permission for given action only
 func (p GovAuthorizationPolicy) SubMessageAuthorizationPolicy(action types.AuthorizationPolicyAction) types.AuthorizationPolicy {
 	defaultPolicy := DefaultAuthorizationPolicy{}
-	if p.propagate != nil && len(p.propagate) != 0 {
-		if _, ok := p.propagate[action]; ok {
-			return NewPartialGovAuthorizationPolicy(defaultPolicy, action)
-		}
+	if _, ok := p.propagate[action]; ok {
+		return NewPartialGovAuthorizationPolicy(defaultPolicy, action)
 	}
 	return defaultPolicy
 }

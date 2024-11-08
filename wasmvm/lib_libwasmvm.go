@@ -9,8 +9,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/CosmWasm/wasmvm/v2/internal/api"
-	"github.com/CosmWasm/wasmvm/v2/types"
+	"github.com/CosmWasm/wasmd/wasmvm/v2/internal/api"
+	"github.com/CosmWasm/wasmd/wasmvm/v2/types"
 )
 
 // VM is the main entry point to this library.

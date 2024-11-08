@@ -36,7 +36,11 @@ func NewRootCmd() *cobra.Command {
 	cfg.Seal()
 	// we "pre"-instantiate the application for getting the injected/configured encoding configuration
 	// note, this is not necessary when using app wiring, as depinject can be directly used (see root_v2.go)
-	tempApp := app.NewWasmApp(log.NewNopLogger(), dbm.NewMemDB(), nil, false, simtestutil.NewAppOptionsWithFlagHome(tempDir()), []wasmkeeper.Option{})
+	temp := tempDir()
+	// cleanup temp dir after we are done with the tempApp, so we don't leave behind a
+	// new temporary directory for every invocation. See https://github.com/CosmWasm/wasmd/issues/2017
+	defer os.RemoveAll(temp)
+	tempApp := app.NewWasmApp(log.NewNopLogger(), dbm.NewMemDB(), nil, false, simtestutil.NewAppOptionsWithFlagHome(temp), []wasmkeeper.Option{})
 	encodingConfig := params.EncodingConfig{
 		InterfaceRegistry: tempApp.InterfaceRegistry(),
 		Codec:             tempApp.AppCodec(),
@@ -78,7 +82,8 @@ func NewRootCmd() *cobra.Command {
 			// sets the RPC client needed for SIGN_MODE_TEXTUAL. This sign mode
 			// is only available if the client is online.
 			if !initClientCtx.Offline {
-				enabledSignModes := append(tx.DefaultSignModes, signing.SignMode_SIGN_MODE_TEXTUAL)
+				enabledSignModes := tx.DefaultSignModes
+				enabledSignModes = append(enabledSignModes, signing.SignMode_SIGN_MODE_TEXTUAL)
 				txConfigOpts := tx.ConfigOptions{
 					EnabledSignModes:           enabledSignModes,
 					TextualCoinMetadataQueryFn: txmodule.NewGRPCCoinMetadataQueryFn(initClientCtx),
@@ -105,7 +110,7 @@ func NewRootCmd() *cobra.Command {
 		},
 	}
 
-	initRootCmd(rootCmd, encodingConfig.TxConfig, encodingConfig.InterfaceRegistry, encodingConfig.Codec, tempApp.BasicModuleManager)
+	initRootCmd(rootCmd, encodingConfig.TxConfig, tempApp.BasicModuleManager)
 
 	// add keyring to autocli opts
 	autoCliOpts := tempApp.AutoCliOpts()

@@ -10,7 +10,6 @@ import (
 	"os"
 	"strconv"
 
-	wasmvm "github.com/CosmWasm/wasmvm/v2"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 
@@ -18,6 +17,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
 )
 
@@ -646,7 +646,8 @@ func GetCmdQueryParams() *cobra.Command {
 		Use:   "params",
 		Short: "Query the current wasm parameters",
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		// we pass in an empty args array to satisfy cobra
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err

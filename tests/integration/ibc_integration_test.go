@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"testing"
 
-	wasmvm "github.com/CosmWasm/wasmvm/v2"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
@@ -18,6 +16,8 @@ import (
 
 	"github.com/CosmWasm/wasmd/app"
 	wasmibctesting "github.com/CosmWasm/wasmd/tests/ibctesting"
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper/wasmtesting"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
@@ -90,12 +90,12 @@ func TestIBCReflectContract(t *testing.T) {
 	// https://github.com/cosmos/cosmos-sdk/blob/31fdee0228bd6f3e787489c8e4434aabc8facb7d/x/ibc/core/04-channel/keeper/packet.go#L121-L132
 
 	// ensure the expected packet was prepared, and relay it
-	require.Equal(t, 1, len(chainA.PendingSendPackets))
-	require.Equal(t, 0, len(chainB.PendingSendPackets))
+	require.Len(t, 1, len(chainA.PendingSendPackets))
+	require.Len(t, 0, len(chainB.PendingSendPackets))
 	err := coordinator.RelayAndAckPendingPackets(path)
 	require.NoError(t, err)
-	require.Equal(t, 0, len(chainA.PendingSendPackets))
-	require.Equal(t, 0, len(chainB.PendingSendPackets))
+	require.Len(t, 0, len(chainA.PendingSendPackets))
+	require.Len(t, 0, len(chainB.PendingSendPackets))
 
 	// let's query the source contract and make sure it registered an address
 	query := ReflectSendQueryMsg{Account: &AccountQuery{ChannelID: path.EndpointA.ChannelID}}
@@ -222,7 +222,7 @@ func TestOnChanOpenTryVersion(t *testing.T) {
 	for name, spec := range specs {
 		t.Run(name, func(t *testing.T) {
 			myContract := &wasmtesting.MockIBCContractCallbacks{
-				IBCChannelOpenFn: func(codeID wasmvm.Checksum, env wasmvmtypes.Env, msg wasmvmtypes.IBCChannelOpenMsg, store wasmvm.KVStore, goapi wasmvm.GoAPI, querier wasmvm.Querier, gasMeter wasmvm.GasMeter, gasLimit uint64, deserCost wasmvmtypes.UFraction) (*wasmvmtypes.IBCChannelOpenResult, uint64, error) {
+				IBCChannelOpenFn: func(_ wasmvm.Checksum, env wasmvmtypes.Env, msg wasmvmtypes.IBCChannelOpenMsg, store wasmvm.KVStore, goapi wasmvm.GoAPI, querier wasmvm.Querier, gasMeter wasmvm.GasMeter, gasLimit uint64, deserCost wasmvmtypes.UFraction) (*wasmvmtypes.IBCChannelOpenResult, uint64, error) {
 					return &wasmvmtypes.IBCChannelOpenResult{
 						Ok: spec.contractRsp,
 					}, 0, nil
