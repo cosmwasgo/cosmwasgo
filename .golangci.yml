@@ -35,7 +35,7 @@ linters:
     - typecheck
     - tagalign
     - tagliatelle
-    - thelper # too many positives with table tests that have custom setup(*testing.T)
+    #    - thelper # too many positives with table tests that have custom setup(*testing.T)
     - testifylint
     #    - perfsprint #
     - promlinter
