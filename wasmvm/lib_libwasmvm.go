@@ -7,13 +7,18 @@ package cosmwasm
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"sync"
+
+	"github.com/tetratelabs/wazero"
 
 	"github.com/CosmWasm/wasmd/wasmvm/v2/internal/api"
 	"github.com/CosmWasm/wasmd/wasmvm/v2/types"
-	"github.com/tetratelabs/wazero"
+	wazeroapi "github.com/tetratelabs/wazero/api"
 )
 
 // VM is the main entry point to this library.
@@ -91,10 +96,17 @@ func (vm *VM) StoreCode(code WasmCode, gasLimit uint64) (Checksum, uint64, error
 	}
 
 	checksum := calculateChecksum(code)
-	ctx := context.Background()
 
+	// Store the wasm file in the cache directory
+	filePath := filepath.Join(vm.config.Cache.BaseDir, hex.EncodeToString(checksum))
+	if err := os.WriteFile(filePath, code, 0600); err != nil {
+		return nil, gasCost, fmt.Errorf("failed to store wasm file: %w", err)
+	}
+
+	ctx := context.Background()
 	module, err := vm.runtime.CompileModule(ctx, code)
 	if err != nil {
+		os.Remove(filePath) // cleanup on failure
 		return nil, gasCost, err
 	}
 
@@ -120,14 +132,12 @@ func (vm *VM) RemoveCode(checksum Checksum) error {
 // and the larger binary blobs (wasm and compiled modules) are all managed
 // by libwasmvm/cosmwasm-vm (Rust part).
 func (vm *VM) GetCode(checksum Checksum) (WasmCode, error) {
-	_, ok := vm.modules.Load(string(checksum))
-	if !ok {
-		return nil, fmt.Errorf("module not found for checksum: %X", checksum)
+	filePath := filepath.Join(vm.config.Cache.BaseDir, hex.EncodeToString(checksum))
+	code, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("wasm file does not exist: %w", err)
 	}
-
-	// For now, return empty code as we don't store original bytes
-	// This needs to be implemented properly
-	return []byte{}, nil
+	return code, nil
 }
 
 // Pin pins a code to an in-memory cache, such that is
@@ -187,17 +197,71 @@ func (vm *VM) Instantiate(
 	if !ok {
 		return nil, 0, fmt.Errorf("module not found for checksum: %X", checksum)
 	}
-	module := moduleI.(wazero.CompiledModule) // Changed from wazeroapi.Module
+	module := moduleI.(wazero.CompiledModule)
 
 	ctx := context.Background()
-	instance, err := vm.runtime.InstantiateModule(ctx, module, wazero.NewModuleConfig())
+
+	// Create the environment module first
+	envBuilder := vm.runtime.NewHostModuleBuilder("env")
+
+	// Add required environment functions
+	envBuilder.NewFunctionBuilder().WithFunc(func(ctx context.Context, mod wazeroapi.Module) {
+		// Implement environment function
+	}).Export("db_read")
+
+	envBuilder.NewFunctionBuilder().WithFunc(func(ctx context.Context, mod wazeroapi.Module) {
+		// Implement environment function
+	}).Export("db_write")
+
+	envBuilder.NewFunctionBuilder().WithFunc(func(ctx context.Context, mod wazeroapi.Module) {
+		// Implement environment function
+	}).Export("db_remove")
+
+	// Create and instantiate the env module
+	envModule, err := envBuilder.Instantiate(ctx)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, fmt.Errorf("failed to create environment module: %v", err)
+	}
+	defer envModule.Close(ctx)
+
+	// Create module config with environment
+	moduleConfig := wazero.NewModuleConfig().
+		WithEnv("COSMWASM_ENV", "1").
+		WithName(string(checksum))
+
+	// Instantiate the main module
+	instance, err := vm.runtime.InstantiateModule(ctx, module, moduleConfig)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to instantiate WASM module: %v", err)
 	}
 	defer instance.Close(ctx)
 
-	// TODO: Implement proper instantiation logic
-	return &types.ContractResult{}, 0, nil
+	// Execute the init entry point
+	initFn := instance.ExportedFunction("init")
+	if initFn == nil {
+		return nil, 0, fmt.Errorf("init function not exported by module")
+	}
+
+	// Marshal the input parameters
+	_, err = json.Marshal(env)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	_, err = json.Marshal(info)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// TODO: Pass the parameters correctly to the init function
+	_, err = initFn.Call(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return &types.ContractResult{
+		Ok: &types.Response{},
+	}, 0, nil
 }
 
 // Execute calls a given contract. Since the only difference between contracts with the same Checksum is the
