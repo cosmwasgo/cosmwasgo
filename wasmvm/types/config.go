@@ -65,3 +65,7 @@ func NewSizeGiga(v uint32) Size {
 func NewSizeGibi(v uint32) Size {
 	return Size{v * 1024 * 1024 * 1024}
 }
+
+func (s Size) Value() uint32 {
+	return s.uint32
+}

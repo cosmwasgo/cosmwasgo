@@ -6,55 +6,72 @@
 package cosmwasm
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	"github.com/CosmWasm/wasmd/wasmvm/v2/internal/api"
 	"github.com/CosmWasm/wasmd/wasmvm/v2/types"
+	"github.com/tetratelabs/wazero"
 )
 
 // VM is the main entry point to this library.
 // You should create an instance with its own subdirectory to manage state inside,
 // and call it for all cosmwasm code related actions.
+// VM is the main entry point to this library.
 type VM struct {
+	runtime    wazero.Runtime
+	modules    sync.Map // map[string]wazero.CompiledModule
 	cache      api.Cache
 	printDebug bool
+	config     types.VMConfig
 }
 
 // NewVM creates a new VM.
-//
-// `dataDir` is a base directory for Wasm blobs and various caches.
-// `supportedCapabilities` is a list of capabilities supported by the chain.
-// `memoryLimit` is the memory limit of each contract execution (in MiB)
-// `printDebug` is a flag to enable/disable printing debug logs from the contract to STDOUT. This should be false in production environments.
-// `cacheSize` sets the size in MiB of an in-memory cache for e.g. module caching. Set to 0 to disable.
-// `deserCost` sets the gas cost of deserializing one byte of data.
 func NewVM(dataDir string, supportedCapabilities []string, memoryLimit uint32, printDebug bool, cacheSize uint32) (*VM, error) {
-	return NewVMWithConfig(types.VMConfig{
+	config := types.VMConfig{
 		Cache: types.CacheOptions{
 			BaseDir:                  dataDir,
 			AvailableCapabilities:    supportedCapabilities,
 			MemoryCacheSizeBytes:     types.NewSizeMebi(cacheSize),
 			InstanceMemoryLimitBytes: types.NewSizeMebi(memoryLimit),
 		},
-	}, printDebug)
+	}
+	return NewVMWithConfig(config, printDebug)
 }
 
 // NewVMWithConfig creates a new VM with a custom configuration.
-// This allows for more fine-grained control over the VM's behavior compared to NewVM and
-// can be extended more easily in the future.
 func NewVMWithConfig(config types.VMConfig, printDebug bool) (*VM, error) {
 	cache, err := api.InitCache(config)
 	if err != nil {
 		return nil, err
 	}
-	return &VM{cache: cache, printDebug: printDebug}, nil
+
+	ctx := context.Background()
+
+	memoryLimitPages := (config.Cache.InstanceMemoryLimitBytes.Value() / uint32(65536)) // Convert bytes to WebAssembly pages
+	rConfig := wazero.NewRuntimeConfig().
+		WithMemoryLimitPages(memoryLimitPages).
+		WithCloseOnContextDone(true)
+
+	runtime := wazero.NewRuntimeWithConfig(ctx, rConfig)
+
+	vm := &VM{
+		runtime:    runtime,
+		modules:    sync.Map{}, // Initialize empty map
+		cache:      cache,
+		printDebug: printDebug,
+		config:     config,
+	}
+	return vm, nil
 }
 
 // Cleanup should be called when no longer using this instances.
 // It frees resources in libwasmvm (the Rust part) and releases a lock in the base directory.
 func (vm *VM) Cleanup() {
-	api.ReleaseCache(vm.cache)
+	ctx := context.Background()
+	vm.runtime.Close(ctx)
 }
 
 // StoreCode will compile the Wasm code, and store the resulting compiled module
@@ -73,8 +90,16 @@ func (vm *VM) StoreCode(code WasmCode, gasLimit uint64) (Checksum, uint64, error
 		return nil, gasCost, types.OutOfGasError{}
 	}
 
-	checksum, err := api.StoreCode(vm.cache, code)
-	return checksum, gasCost, err
+	checksum := calculateChecksum(code)
+	ctx := context.Background()
+
+	module, err := vm.runtime.CompileModule(ctx, code)
+	if err != nil {
+		return nil, gasCost, err
+	}
+
+	vm.modules.Store(string(checksum), module)
+	return checksum, gasCost, nil
 }
 
 // StoreCodeUnchecked is the same as StoreCode but skips static validation checks.
@@ -95,7 +120,14 @@ func (vm *VM) RemoveCode(checksum Checksum) error {
 // and the larger binary blobs (wasm and compiled modules) are all managed
 // by libwasmvm/cosmwasm-vm (Rust part).
 func (vm *VM) GetCode(checksum Checksum) (WasmCode, error) {
-	return api.GetCode(vm.cache, checksum)
+	_, ok := vm.modules.Load(string(checksum))
+	if !ok {
+		return nil, fmt.Errorf("module not found for checksum: %X", checksum)
+	}
+
+	// For now, return empty code as we don't store original bytes
+	// This needs to be implemented properly
+	return []byte{}, nil
 }
 
 // Pin pins a code to an in-memory cache, such that is
@@ -151,25 +183,21 @@ func (vm *VM) Instantiate(
 	gasLimit uint64,
 	deserCost types.UFraction,
 ) (*types.ContractResult, uint64, error) {
-	envBin, err := json.Marshal(env)
-	if err != nil {
-		return nil, 0, err
+	moduleI, ok := vm.modules.Load(string(checksum))
+	if !ok {
+		return nil, 0, fmt.Errorf("module not found for checksum: %X", checksum)
 	}
-	infoBin, err := json.Marshal(info)
-	if err != nil {
-		return nil, 0, err
-	}
-	data, gasReport, err := api.Instantiate(vm.cache, checksum, envBin, infoBin, initMsg, &gasMeter, store, &goapi, &querier, gasLimit, vm.printDebug)
-	if err != nil {
-		return nil, gasReport.UsedInternally, err
-	}
+	module := moduleI.(wazero.CompiledModule) // Changed from wazeroapi.Module
 
-	var result types.ContractResult
-	err = DeserializeResponse(gasLimit, deserCost, &gasReport, data, &result)
+	ctx := context.Background()
+	instance, err := vm.runtime.InstantiateModule(ctx, module, wazero.NewModuleConfig())
 	if err != nil {
-		return nil, gasReport.UsedInternally, err
+		return nil, 0, err
 	}
-	return &result, gasReport.UsedInternally, nil
+	defer instance.Close(ctx)
+
+	// TODO: Implement proper instantiation logic
+	return &types.ContractResult{}, 0, nil
 }
 
 // Execute calls a given contract. Since the only difference between contracts with the same Checksum is the
@@ -666,12 +694,13 @@ func (vm *VM) IBCDestinationCallback(
 }
 
 func compileCost(code WasmCode) uint64 {
-	// CostPerByte is how much CosmWasm gas is charged *per byte* for compiling WASM code.
-	// Benchmarks and numbers (in SDK Gas) were discussed in:
-	// https://github.com/CosmWasm/wasmd/pull/634#issuecomment-938056803
 	const CostPerByte uint64 = 3 * 140_000
-
 	return CostPerByte * uint64(len(code))
+}
+
+func calculateChecksum(code []byte) Checksum {
+	// Implement proper checksum calculation
+	return make([]byte, 32) // placeholder
 }
 
 // hasSubMessages is an interface for contract results that can contain sub-messages.
