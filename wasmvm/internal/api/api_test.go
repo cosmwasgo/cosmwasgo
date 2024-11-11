@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/CosmWasm/wasmvm/v2/types"
+	"github.com/CosmWasm/wasmd/wasmvm/v2/types"
 )
 
 func TestValidateAddressFailure(t *testing.T) {

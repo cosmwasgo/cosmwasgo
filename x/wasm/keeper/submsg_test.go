@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"testing"
 
-	wasmvm "github.com/CosmWasm/wasmvm/v2"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -18,6 +16,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper/testdata"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper/wasmtesting"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
@@ -193,13 +193,15 @@ func TestDispatchSubMsgErrorHandling(t *testing.T) {
 	type assertion func(t *testing.T, ctx sdk.Context, contract, emptyAccount string, response wasmvmtypes.SubMsgResult)
 
 	assertReturnedEvents := func(expectedEvents int) assertion {
-		return func(t *testing.T, ctx sdk.Context, contract, emptyAccount string, response wasmvmtypes.SubMsgResult) {
+		return func(t *testing.T, _ sdk.Context, contract, emptyAccount string, response wasmvmtypes.SubMsgResult) {
+			t.Helper()
 			require.Len(t, response.Ok.Events, expectedEvents)
 		}
 	}
 
 	assertGasUsed := func(minGas, maxGas uint64) assertion {
 		return func(t *testing.T, ctx sdk.Context, contract, emptyAccount string, response wasmvmtypes.SubMsgResult) {
+			t.Helper()
 			gasUsed := ctx.GasMeter().GasConsumed()
 			assert.True(t, gasUsed >= minGas, "Used %d gas (less than expected %d)", gasUsed, minGas)
 			assert.True(t, gasUsed <= maxGas, "Used %d gas (more than expected %d)", gasUsed, maxGas)
@@ -428,7 +430,7 @@ func TestDispatchSubMsgEncodeToNoSdkMsg(t *testing.T) {
 	require.NotNil(t, res.Result.Ok)
 	sub := res.Result.Ok
 	assert.Empty(t, sub.Data)
-	require.Len(t, sub.Events, 0)
+	require.Empty(t, sub.Events)
 }
 
 // Try a simple send, no gas limit to for a sanity check before trying table tests
@@ -559,11 +561,13 @@ func TestDispatchSubMsgConditionalReplyOn(t *testing.T) {
 }
 
 func TestInstantiateGovSubMsgAuthzPropagated(t *testing.T) {
+	t.Helper()
 	mockWasmVM := &wasmtesting.MockWasmEngine{}
 	wasmtesting.MakeInstantiable(mockWasmVM)
 	var instanceLevel int
 	// mock wasvm to return new instantiate msgs with the response
 	mockWasmVM.InstantiateFn = func(codeID wasmvm.Checksum, env wasmvmtypes.Env, info wasmvmtypes.MessageInfo, initMsg []byte, store wasmvm.KVStore, goapi wasmvm.GoAPI, querier wasmvm.Querier, gasMeter wasmvm.GasMeter, gasLimit uint64, deserCost wasmvmtypes.UFraction) (*wasmvmtypes.ContractResult, uint64, error) {
+		t.Helper()
 		if instanceLevel == 2 {
 			return &wasmvmtypes.ContractResult{Ok: &wasmvmtypes.Response{}}, 0, nil
 		}
@@ -653,6 +657,7 @@ func TestMigrateGovSubMsgAuthzPropagated(t *testing.T) {
 	var instanceLevel int
 	// mock wasvm to return new migrate msgs with the response
 	mockWasmVM.MigrateFn = func(codeID wasmvm.Checksum, env wasmvmtypes.Env, migrateMsg []byte, store wasmvm.KVStore, goapi wasmvm.GoAPI, querier wasmvm.Querier, gasMeter wasmvm.GasMeter, gasLimit uint64, deserCost wasmvmtypes.UFraction) (*wasmvmtypes.ContractResult, uint64, error) {
+		t.Helper()
 		if instanceLevel == 1 {
 			return &wasmvmtypes.ContractResult{Ok: &wasmvmtypes.Response{}}, 0, nil
 		}
@@ -674,6 +679,9 @@ func TestMigrateGovSubMsgAuthzPropagated(t *testing.T) {
 				},
 			},
 		}, 0, nil
+	}
+	mockWasmVM.MigrateWithInfoFn = func(codeID wasmvm.Checksum, env wasmvmtypes.Env, migrateMsg []byte, migrateInfo wasmvmtypes.MigrateInfo, store wasmvm.KVStore, goapi wasmvm.GoAPI, querier wasmvm.Querier, gasMeter wasmvm.GasMeter, gasLimit uint64, deserCost wasmvmtypes.UFraction) (*wasmvmtypes.ContractResult, uint64, error) {
+		return mockWasmVM.MigrateFn(codeID, env, migrateMsg, store, goapi, querier, gasMeter, gasLimit, deserCost)
 	}
 
 	specs := map[string]struct {

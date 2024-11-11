@@ -1,0 +1,4 @@
+# cargo workspace
+
+[workspace]
+members = ["wasmvm/libwasmvm"]

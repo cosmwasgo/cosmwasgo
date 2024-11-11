@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -15,6 +14,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper/testdata"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper/wasmtesting"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
@@ -41,6 +41,7 @@ func TestInstantiate2(t *testing.T) {
 	)
 	// create instances for duplicate checks
 	exampleContract := func(t *testing.T, ctx sdk.Context, fixMsg bool) {
+		t.Helper()
 		_, _, err := keepers.ContractKeeper.Instantiate2(
 			ctx,
 			example.CodeID,
@@ -55,9 +56,11 @@ func TestInstantiate2(t *testing.T) {
 		require.NoError(t, err)
 	}
 	exampleWithFixMsg := func(t *testing.T, ctx sdk.Context) {
+		t.Helper()
 		exampleContract(t, ctx, true)
 	}
 	exampleWithoutFixMsg := func(t *testing.T, ctx sdk.Context) {
+		t.Helper()
 		exampleContract(t, ctx, false)
 	}
 	specs := map[string]struct {

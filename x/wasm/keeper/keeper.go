@@ -12,8 +12,6 @@ import (
 	"strings"
 	"time"
 
-	wasmvm "github.com/CosmWasm/wasmvm/v2"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	"cosmossdk.io/collections"
@@ -31,6 +29,8 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	vestingexported "github.com/cosmos/cosmos-sdk/x/auth/vesting/exported"
 
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	"github.com/CosmWasm/wasmd/x/wasm/ioutils"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
 )
@@ -502,7 +502,7 @@ func (k Keeper) migrate(
 	if report.ContractMigrateVersion == nil ||
 		oldReport.ContractMigrateVersion == nil ||
 		*report.ContractMigrateVersion != *oldReport.ContractMigrateVersion {
-		response, err = k.callMigrateEntrypoint(sdkCtx, contractAddress, wasmvmtypes.Checksum(newCodeInfo.CodeHash), msg, newCodeID)
+		response, err = k.callMigrateEntrypoint(sdkCtx, contractAddress, wasmvmtypes.Checksum(newCodeInfo.CodeHash), msg, newCodeID, caller, oldReport.ContractMigrateVersion)
 		if err != nil {
 			return nil, err
 		}
@@ -560,6 +560,8 @@ func (k Keeper) callMigrateEntrypoint(
 	newChecksum wasmvmtypes.Checksum,
 	msg []byte,
 	newCodeID uint64,
+	senderAddress sdk.AccAddress,
+	oldMigrateVersion *uint64,
 ) (*wasmvmtypes.Response, error) {
 	sdkCtx, discount := k.checkDiscountEligibility(sdkCtx, newChecksum, k.IsPinnedCode(sdkCtx, newCodeID))
 	setupCost := k.gasRegister.SetupContractCost(discount, len(msg))
@@ -573,7 +575,13 @@ func (k Keeper) callMigrateEntrypoint(
 	prefixStoreKey := types.GetContractStorePrefix(contractAddress)
 	vmStore := types.NewStoreAdapter(prefix.NewStore(runtime.KVStoreAdapter(k.storeService.OpenKVStore(sdkCtx)), prefixStoreKey))
 	gasLeft := k.runtimeGasForContract(sdkCtx)
-	res, gasUsed, err := k.wasmVM.Migrate(newChecksum, env, msg, vmStore, cosmwasmAPI, &querier, k.gasMeter(sdkCtx), gasLeft, costJSONDeserialization)
+
+	migrateInfo := wasmvmtypes.MigrateInfo{
+		Sender:            senderAddress.String(),
+		OldMigrateVersion: oldMigrateVersion,
+	}
+	res, gasUsed, err := k.wasmVM.MigrateWithInfo(newChecksum, env, msg, migrateInfo, vmStore, cosmwasmAPI, &querier, k.gasMeter(sdkCtx), gasLeft, costJSONDeserialization)
+
 	k.consumeRuntimeGas(sdkCtx, gasUsed)
 	if err != nil {
 		return nil, errorsmod.Wrap(types.ErrVMError, err.Error())
@@ -784,7 +792,7 @@ func (k Keeper) appendToContractHistory(ctx context.Context, contractAddr sdk.Ac
 	for _, e := range newEntries {
 		pos++
 		key := types.GetContractCodeHistoryElementKey(contractAddr, pos)
-		if err := store.Set(key, k.cdc.MustMarshal(&e)); err != nil { //nolint:gosec
+		if err := store.Set(key, k.cdc.MustMarshal(&e)); err != nil {
 			return err
 		}
 	}
@@ -861,7 +869,7 @@ func (k Keeper) QuerySmart(ctx context.Context, contractAddr sdk.AccAddress, req
 }
 
 func checkAndIncreaseQueryStackSize(ctx context.Context, maxQueryStackSize uint32) (sdk.Context, error) {
-	var queryStackSize uint32 = 0
+	var queryStackSize uint32
 	if size, ok := types.QueryStackSize(ctx); ok {
 		queryStackSize = size
 	}
@@ -879,7 +887,7 @@ func checkAndIncreaseQueryStackSize(ctx context.Context, maxQueryStackSize uint3
 }
 
 func checkAndIncreaseCallDepth(ctx context.Context, maxCallDepth uint32) (sdk.Context, error) {
-	var callDepth uint32 = 0
+	var callDepth uint32
 	if size, ok := types.CallDepth(ctx); ok {
 		callDepth = size
 	}

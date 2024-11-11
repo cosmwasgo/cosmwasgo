@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"testing"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/stretchr/testify/require"
@@ -14,6 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/CosmWasm/wasmd/tests/ibctesting"
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper/testdata"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
 )
@@ -21,6 +21,7 @@ import (
 // InstantiateStargateReflectContract stores and instantiates the reflect contract shipped with CosmWasm 1.5.3.
 // This instance still expects the old CosmosMsg.Stargate variant instead of the new CosmosMsg.Any.
 func InstantiateStargateReflectContract(t *testing.T, chain *ibctesting.TestChain) sdk.AccAddress {
+	t.Helper()
 	codeID := chain.StoreCodeFile("../../x/wasm/keeper/testdata/reflect_1_5.wasm").CodeID
 	contractAddr := chain.InstantiateContract(codeID, []byte(`{}`))
 	require.NotEmpty(t, contractAddr)
@@ -29,6 +30,7 @@ func InstantiateStargateReflectContract(t *testing.T, chain *ibctesting.TestChai
 
 // InstantiateReflectContract stores and instantiates a 2.0 reflect contract instance.
 func InstantiateReflectContract(t *testing.T, chain *ibctesting.TestChain) sdk.AccAddress {
+	t.Helper()
 	codeID := chain.StoreCodeFile("../../x/wasm/keeper/testdata/reflect_2_0.wasm").CodeID
 	contractAddr := chain.InstantiateContract(codeID, []byte(`{}`))
 	require.NotEmpty(t, contractAddr)
@@ -37,6 +39,7 @@ func InstantiateReflectContract(t *testing.T, chain *ibctesting.TestChain) sdk.A
 
 // MustExecViaReflectContract submit execute message to send payload to reflect contract
 func MustExecViaReflectContract(t *testing.T, chain *ibctesting.TestChain, contractAddr sdk.AccAddress, msgs ...wasmvmtypes.CosmosMsg) *abci.ExecTxResult {
+	t.Helper()
 	rsp, err := ExecViaReflectContract(t, chain, contractAddr, msgs)
 	require.NoError(t, err)
 	return rsp
@@ -48,6 +51,7 @@ type sdkMessageType interface {
 }
 
 func MustExecViaStargateReflectContract[T sdkMessageType](t *testing.T, chain *ibctesting.TestChain, contractAddr sdk.AccAddress, msgs ...T) *abci.ExecTxResult {
+	t.Helper()
 	require.NotEmpty(t, msgs)
 	// convert messages to stargate variant
 	vmMsgs := make([]string, len(msgs))

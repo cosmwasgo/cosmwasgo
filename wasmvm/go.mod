@@ -1,11 +1,12 @@
-module github.com/CosmWasm/wasmvm/v2
+module github.com/CosmWasm/wasmd/wasmvm/v2
 
-go 1.21
+go 1.23
 
 require (
 	github.com/google/btree v1.0.0
 	github.com/shamaton/msgpack/v2 v2.2.0
 	github.com/stretchr/testify v1.8.1
+	github.com/tetratelabs/wazero v1.8.1
 	golang.org/x/sys v0.16.0
 )
 

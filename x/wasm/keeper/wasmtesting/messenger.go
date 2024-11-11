@@ -3,10 +3,10 @@ package wasmtesting
 import (
 	"errors"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
-
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 )
 
 type MockMessageHandler struct {

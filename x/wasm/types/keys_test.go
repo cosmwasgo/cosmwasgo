@@ -89,7 +89,6 @@ func TestGetContractByCreatedSecondaryIndexKey(t *testing.T) {
 func TestGetContractByCreatorSecondaryIndexKey(t *testing.T) {
 	creatorAddr := bytes.Repeat([]byte{4}, 20)
 	e := ContractCodeHistoryEntry{
-		CodeID:  1,
 		Updated: &AbsoluteTxPosition{2 + 1<<(8*7), 3 + 1<<(8*7)},
 	}
 

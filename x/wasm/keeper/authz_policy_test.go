@@ -439,7 +439,8 @@ func (a AlwaysRejectTestAuthZPolicy) CanInstantiateContract(c types.AccessConfig
 	return false
 }
 
-func (a AlwaysRejectTestAuthZPolicy) CanModifyContract(admin, actor sdk.AccAddress) bool {
+// CanModifyContract accepts any admin and actor
+func (a AlwaysRejectTestAuthZPolicy) CanModifyContract(_, actor sdk.AccAddress) bool {
 	return false
 }
 
