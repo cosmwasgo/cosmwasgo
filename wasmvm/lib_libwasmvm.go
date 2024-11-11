@@ -142,9 +142,15 @@ func (vm *VM) storeModule(checksum []byte, code []byte) (wazero.CompiledModule, 
 		return nil, fmt.Errorf("failed to compile WASM module: %v", err)
 	}
 
-	// Validate memory sections
-	if len(module.ImportedFunctions()) != 0 {
-		return nil, fmt.Errorf("Error during static Wasm validation: Wasm contract must contain no imported functions")
+	// Validate imports
+	disallowedImports := []string{}
+	for _, imp := range module.ImportedFunctions() {
+		if imp.ModuleName() != "env" {
+			disallowedImports = append(disallowedImports, fmt.Sprintf("%s.%s", imp.ModuleName(), imp.Name()))
+		}
+	}
+	if len(disallowedImports) != 0 {
+		return nil, fmt.Errorf("Error during static Wasm validation: Wasm contract must not import functions from modules other than 'env': %v", disallowedImports)
 	}
 
 	// Store in memory cache
@@ -157,6 +163,7 @@ func (vm *VM) storeModule(checksum []byte, code []byte) (wazero.CompiledModule, 
 	}
 
 	return module, nil
+
 }
 
 // StoreCodeUnchecked is the same as StoreCode but skips static validation checks.
