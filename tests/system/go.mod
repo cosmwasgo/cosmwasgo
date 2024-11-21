@@ -1,6 +1,6 @@
 module github.com/CosmWasm/wasmd/tests/system
 
-go 1.21
+go 1.23
 
 require (
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5 // indirect
