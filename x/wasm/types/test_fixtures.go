@@ -4,11 +4,11 @@ import (
 	_ "embed"
 	"math/rand"
 
-	wasmvm "github.com/CosmWasm/wasmvm/v2"
-
 	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
 )
 
 //go:embed testdata/reflect.wasm
@@ -49,7 +49,7 @@ func GenesisFixture(mutators ...func(*GenesisState)) GenesisState {
 
 func randBytes(n int) []byte {
 	r := make([]byte, n)
-	rand.Read(r) 
+	rand.Read(r)
 	return r
 }
 

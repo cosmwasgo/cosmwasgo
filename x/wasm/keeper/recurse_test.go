@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"testing"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -13,6 +12,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
 )
 
@@ -223,10 +223,10 @@ func TestLimitRecursiveQueryGas(t *testing.T) {
 		GasWork2k uint64 = 76_817 // = SetupContractCost + x // we have 6x gas used in cpu than in the instance
 		ExtraGas  uint64 = 226    // For "recursion 5, lots of work" test
 
-		GasWork2kDiscounted uint64 = 18_674
+	//	GasWork2kDiscounted uint64 = 18_674
 
-		// This is overhead for calling into a sub-contract
-		GasReturnHashed uint64 = 0x3B
+	// This is overhead for calling into a sub-contract
+	//	GasReturnHashed uint64 = 48
 	)
 
 	cases := map[string]struct {

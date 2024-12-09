@@ -245,6 +245,8 @@ type WasmApp struct {
 }
 
 // NewWasmApp returns a reference to an initialized WasmApp.
+//
+//nolint:maintidx
 func NewWasmApp(
 	logger log.Logger,
 	db dbm.DB,

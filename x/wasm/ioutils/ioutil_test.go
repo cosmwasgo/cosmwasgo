@@ -3,7 +3,6 @@ package ioutils
 import (
 	"bytes"
 	"compress/gzip"
-	"errors"
 	"io"
 	"os"
 	"testing"
@@ -59,7 +58,7 @@ func TestUncompress(t *testing.T) {
 	for msg, spec := range specs {
 		t.Run(msg, func(t *testing.T) {
 			r, err := Uncompress(spec.src, maxSize)
-			require.True(t, errors.Is(err, spec.expError), "exp %v got %+v", spec.expError, err)
+			require.ErrorIs(t, err, spec.expError, "exp %v got %+v", spec.expError, err)
 			if spec.expError != nil {
 				return
 			}

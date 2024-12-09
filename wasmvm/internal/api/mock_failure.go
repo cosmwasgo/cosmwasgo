@@ -3,7 +3,7 @@ package api
 import (
 	"fmt"
 
-	"github.com/CosmWasm/wasmvm/v2/types"
+	"github.com/CosmWasm/wasmd/wasmvm/v2/types"
 )
 
 /***** Mock types.GoAPI ****/

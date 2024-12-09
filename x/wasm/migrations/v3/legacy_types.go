@@ -49,7 +49,7 @@ func (AccessType) EnumDescriptor() ([]byte, []int) {
 
 // AccessTypeParam
 type AccessTypeParam struct {
-	Value AccessType `protobuf:"varint,1,opt,name=value,proto3,enum=cosmwasm.wasm.v1.AccessType" json:"value,omitempty" yaml:"value"`
+	Value AccessType `json:"value,omitempty" protobuf:"varint,1,opt,name=value,proto3,enum=cosmwasm.wasm.v1.AccessType" yaml:"value"`
 }
 
 func (m *AccessTypeParam) Reset()         { *m = AccessTypeParam{} }
@@ -92,11 +92,11 @@ var xxx_messageInfo_AccessTypeParam proto.InternalMessageInfo
 
 // AccessConfig access control type.
 type AccessConfig struct {
-	Permission AccessType `protobuf:"varint,1,opt,name=permission,proto3,enum=cosmwasm.wasm.v1.AccessType" json:"permission,omitempty" yaml:"permission"`
+	Permission AccessType `json:"permission,omitempty" protobuf:"varint,1,opt,name=permission,proto3,enum=cosmwasm.wasm.v1.AccessType" yaml:"permission"`
 	// Address
 	// Deprecated: replaced by addresses
-	Address   string   `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty" yaml:"address"`
-	Addresses []string `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty" yaml:"addresses"`
+	Address   string   `json:"address,omitempty"   protobuf:"bytes,2,opt,name=address,proto3"   yaml:"address"`
+	Addresses []string `json:"addresses,omitempty" protobuf:"bytes,3,rep,name=addresses,proto3" yaml:"addresses"`
 }
 
 func (m *AccessConfig) Reset()         { *m = AccessConfig{} }
@@ -139,8 +139,8 @@ var xxx_messageInfo_AccessConfig proto.InternalMessageInfo
 
 // Params defines the set of wasm parameters.
 type Params struct {
-	CodeUploadAccess             AccessConfig `protobuf:"bytes,1,opt,name=code_upload_access,json=codeUploadAccess,proto3" json:"code_upload_access" yaml:"code_upload_access"`
-	InstantiateDefaultPermission AccessType   `protobuf:"varint,2,opt,name=instantiate_default_permission,json=instantiateDefaultPermission,proto3,enum=cosmwasm.wasm.v1.AccessType" json:"instantiate_default_permission,omitempty" yaml:"instantiate_default_permission"`
+	CodeUploadAccess             AccessConfig `json:"code_upload_access"                       protobuf:"bytes,1,opt,name=code_upload_access,json=codeUploadAccess,proto3"                                                           yaml:"code_upload_access"`
+	InstantiateDefaultPermission AccessType   `json:"instantiate_default_permission,omitempty" protobuf:"varint,2,opt,name=instantiate_default_permission,json=instantiateDefaultPermission,proto3,enum=cosmwasm.wasm.v1.AccessType" yaml:"instantiate_default_permission"`
 }
 
 func (p Params) String() string {
@@ -191,11 +191,11 @@ var xxx_messageInfo_Params proto.InternalMessageInfo
 // CodeInfo is data for the uploaded contract WASM code
 type CodeInfo struct {
 	// CodeHash is the unique identifier created by wasmvm
-	CodeHash []byte `protobuf:"bytes,1,opt,name=code_hash,json=codeHash,proto3" json:"code_hash,omitempty"`
+	CodeHash []byte `json:"code_hash,omitempty" protobuf:"bytes,1,opt,name=code_hash,json=codeHash,proto3"`
 	// Creator address who initially stored the code
-	Creator string `protobuf:"bytes,2,opt,name=creator,proto3" json:"creator,omitempty"`
+	Creator string `json:"creator,omitempty" protobuf:"bytes,2,opt,name=creator,proto3"`
 	// InstantiateConfig access control to apply on contract creation, optional
-	InstantiateConfig AccessConfig `protobuf:"bytes,5,opt,name=instantiate_config,json=instantiateConfig,proto3" json:"instantiate_config"`
+	InstantiateConfig AccessConfig `json:"instantiate_config" protobuf:"bytes,5,opt,name=instantiate_config,json=instantiateConfig,proto3"`
 }
 
 func (m *CodeInfo) Reset()         { *m = CodeInfo{} }
