@@ -226,7 +226,7 @@ func TestLimitRecursiveQueryGas(t *testing.T) {
 		GasWork2kDiscounted uint64 = 18_674
 
 		// This is overhead for calling into a sub-contract
-		GasReturnHashed uint64 = 48
+		GasReturnHashed uint64 = 0x3B
 	)
 
 	cases := map[string]struct {
