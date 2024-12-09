@@ -12,6 +12,7 @@ import (
 
 	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
+	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 )
 
 // NewKeeper creates a new contract Keeper instance
