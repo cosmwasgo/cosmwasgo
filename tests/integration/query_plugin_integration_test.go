@@ -569,6 +569,7 @@ func TestDistributionQuery(t *testing.T) {
 				DelegatorWithdrawAddress: &wasmvmtypes.DelegatorWithdrawAddressQuery{DelegatorAddress: delegator.String()},
 			},
 			assert: func(t *testing.T, d []byte) {
+				t.Helper()
 				rsp := unmarshalReflect[wasmvmtypes.DelegatorWithdrawAddressResponse](t, d)
 				assert.Equal(t, delegator.String(), rsp.WithdrawAddress)
 			},
@@ -583,6 +584,7 @@ func TestDistributionQuery(t *testing.T) {
 				DelegatorWithdrawAddress: &wasmvmtypes.DelegatorWithdrawAddressQuery{DelegatorAddress: delegator.String()},
 			},
 			assert: func(t *testing.T, d []byte) {
+				t.Helper()
 				var rsp wasmvmtypes.DelegatorWithdrawAddressResponse
 				mustUnmarshal(t, d, &rsp)
 				assert.Equal(t, otherAddr.String(), rsp.WithdrawAddress)

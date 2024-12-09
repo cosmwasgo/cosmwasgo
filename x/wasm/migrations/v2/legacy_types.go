@@ -164,14 +164,13 @@ func (m *Params) XXX_Unmarshal(b []byte) error {
 func (m *Params) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Params.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
 	}
+	b = b[:cap(b)]
+	n, err := m.MarshalToSizedBuffer(b)
+	if err != nil {
+		return nil, err
+	}
+	return b[:n], nil
 }
 
 func (m *Params) XXX_Merge(src proto.Message) {
@@ -212,14 +211,13 @@ func (m *CodeInfo) XXX_Unmarshal(b []byte) error {
 func (m *CodeInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_CodeInfo.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
 	}
+	b = b[:cap(b)]
+	n, err := m.MarshalToSizedBuffer(b)
+	if err != nil {
+		return nil, err
+	}
+	return b[:n], nil
 }
 
 func (m *CodeInfo) XXX_Merge(src proto.Message) {
@@ -639,35 +637,35 @@ func (m *AccessConfig) Size() (n int) {
 	return n
 }
 
-func (m *Params) Size() (n int) {
-	if m == nil {
+func (p *Params) Size() (n int) {
+	if p == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = m.CodeUploadAccess.Size()
+	l = p.CodeUploadAccess.Size()
 	n += 1 + l + sovTypes(uint64(l))
-	if m.InstantiateDefaultPermission != 0 {
-		n += 1 + sovTypes(uint64(m.InstantiateDefaultPermission))
+	if p.InstantiateDefaultPermission != 0 {
+		n += 1 + sovTypes(uint64(p.InstantiateDefaultPermission))
 	}
 	return n
 }
 
-func (m *CodeInfo) Size() (n int) {
-	if m == nil {
+func (p *CodeInfo) Size() (n int) {
+	if p == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.CodeHash)
+	l = len(p.CodeHash)
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
-	l = len(m.Creator)
+	l = len(p.Creator)
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
-	l = m.InstantiateConfig.Size()
+	l = p.InstantiateConfig.Size()
 	n += 1 + l + sovTypes(uint64(l))
 	return n
 }
@@ -676,7 +674,7 @@ func sovTypes(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
 
-func (m *AccessTypeParam) Unmarshal(dAtA []byte) error {
+func (p *AccessTypeParam) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -709,7 +707,7 @@ func (m *AccessTypeParam) Unmarshal(dAtA []byte) error {
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
 			}
-			m.Value = 0
+			p.Value = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTypes
@@ -719,7 +717,7 @@ func (m *AccessTypeParam) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Value |= AccessType(b&0x7F) << shift
+				p.Value |= AccessType(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

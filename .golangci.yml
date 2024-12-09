@@ -49,6 +49,7 @@ linters:
 issues:
   exclude-files:
     - server/grpc/gogoreflection/fix_registration.go
+    - x/wasm/migrations/v2/legacy_types.go
     - ".*\\.pb\\.go$"
     - ".*\\.pb\\.gw\\.\\.go$"
     - ".*\\.pulsar\\.go$"

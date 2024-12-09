@@ -116,7 +116,7 @@ func TestCountTxDecorator(t *testing.T) {
 func TestLimitSimulationGasDecorator(t *testing.T) {
 	var (
 		hundred storetypes.Gas = 100
-		zero    storetypes.Gas = 0
+		zero    storetypes.Gas
 	)
 	specs := map[string]struct {
 		customLimit *storetypes.Gas
