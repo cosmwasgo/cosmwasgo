@@ -58,7 +58,7 @@ func TestFromIBCTransferToContract(t *testing.T) {
 		},
 		"nack": {
 			contract: &nackReceiverContract{},
-			setupContract: func(t *testing.T, contract wasmtesting.IBCContractCallbacks, chain *wasmibctesting.TestChain) {
+			setupContract: func(t *testing.T, contract wasmtesting.IBCContractCallbacks, _ *wasmibctesting.TestChain) {
 				t.Helper()
 				c := contract.(*nackReceiverContract)
 				c.t = t
@@ -70,7 +70,7 @@ func TestFromIBCTransferToContract(t *testing.T) {
 		},
 		"error": {
 			contract: &errorReceiverContract{},
-			setupContract: func(t *testing.T, contract wasmtesting.IBCContractCallbacks, chain *wasmibctesting.TestChain) {
+			setupContract: func(t *testing.T, contract wasmtesting.IBCContractCallbacks, _ *wasmibctesting.TestChain) {
 				t.Helper()
 				c := contract.(*errorReceiverContract)
 				c.t = t

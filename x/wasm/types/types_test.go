@@ -240,7 +240,7 @@ func TestContractInfoReadExtension(t *testing.T) {
 			expVal: &myExtension,
 		},
 		"no extension set": {
-			setup: func(i *ContractInfo) {
+			setup: func(_ *ContractInfo) {
 			},
 			param: func() ContractInfoExtension {
 				return &v1beta1.Proposal{}
@@ -268,7 +268,7 @@ func TestContractInfoReadExtension(t *testing.T) {
 			expErr: true,
 		},
 		"not a pointer argument": {
-			setup: func(i *ContractInfo) {
+			setup: func(_ *ContractInfo) {
 			},
 			param: func() ContractInfoExtension {
 				return TestExtensionAsStruct{}

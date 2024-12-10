@@ -23,7 +23,7 @@ func TestValidateGenesisState(t *testing.T) {
 		expError   bool
 	}{
 		"all good": {
-			srcMutator: func(s *GenesisState) {},
+			srcMutator: func(_ *GenesisState) {},
 		},
 		"params invalid": {
 			srcMutator: func(s *GenesisState) {
