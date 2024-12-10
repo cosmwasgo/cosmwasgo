@@ -11,8 +11,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 
 	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
+
 	"github.com/CosmWasm/wasmd/x/wasm/types"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 )
 
 // NewKeeper creates a new contract Keeper instance
