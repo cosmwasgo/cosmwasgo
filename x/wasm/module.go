@@ -7,7 +7,6 @@ import (
 	"runtime/debug"
 	"strings"
 
-	wasmvm "github.com/CosmWasm/wasmvm/v2"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cast"
@@ -25,6 +24,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
 	"github.com/CosmWasm/wasmd/x/wasm/client/cli"
 	"github.com/CosmWasm/wasmd/x/wasm/exported"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
@@ -205,7 +205,7 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 }
 
 // ProposalMsgs returns msgs used for governance proposals for simulations.
-func (am AppModule) ProposalMsgs(simState module.SimulationState) []simtypes.WeightedProposalMsg {
+func (am AppModule) ProposalMsgs(_ module.SimulationState) []simtypes.WeightedProposalMsg {
 	return simulation.ProposalMsgs(am.bankKeeper, am.keeper)
 }
 
@@ -222,7 +222,7 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 
 // AddModuleInitFlags implements servertypes.ModuleInitFlags interface.
 func AddModuleInitFlags(startCmd *cobra.Command) {
-	defaults := types.DefaultWasmConfig()
+	defaults := types.DefaultNodeConfig()
 	startCmd.Flags().Uint32(flagWasmMemoryCacheSize, defaults.MemoryCacheSize, "Sets the size in MiB (NOT bytes) of an in-memory cache for Wasm modules. Set to 0 to disable.")
 	startCmd.Flags().Uint64(flagWasmQueryGasLimit, defaults.SmartQueryGasLimit, "Set the max gas that can be spent on executing a query with a Wasm contract")
 	startCmd.Flags().String(flagWasmSimulationGasLimit, "", "Set the max gas that can be spent when executing a simulation TX")
@@ -242,35 +242,44 @@ func AddModuleInitFlags(startCmd *cobra.Command) {
 	startCmd.PreRunE = chainPreRuns(preCheck, startCmd.PreRunE)
 }
 
-// ReadWasmConfig reads the wasm specifig configuration
-func ReadWasmConfig(opts servertypes.AppOptions) (types.WasmConfig, error) {
-	cfg := types.DefaultWasmConfig()
+// ReadNodeConfig reads the node specific configuration
+func ReadNodeConfig(opts servertypes.AppOptions) (types.NodeConfig, error) {
+	cfg := types.DefaultNodeConfig()
 	var err error
+
 	if v := opts.Get(flagWasmMemoryCacheSize); v != nil {
-		if cfg.MemoryCacheSize, err = cast.ToUint32E(v); err != nil {
+		cfg.MemoryCacheSize, err = cast.ToUint32E(v)
+		if err != nil {
 			return cfg, err
 		}
 	}
+
 	if v := opts.Get(flagWasmQueryGasLimit); v != nil {
-		if cfg.SmartQueryGasLimit, err = cast.ToUint64E(v); err != nil {
+		cfg.SmartQueryGasLimit, err = cast.ToUint64E(v)
+		if err != nil {
 			return cfg, err
 		}
 	}
+
 	if v := opts.Get(flagWasmSimulationGasLimit); v != nil {
-		if raw, ok := v.(string); !ok || raw != "" {
-			limit, err := cast.ToUint64E(v) // non empty string set
+		raw, ok := v.(string)
+		if !ok || raw != "" {
+			limit, err := cast.ToUint64E(v) // non-empty string set
 			if err != nil {
 				return cfg, err
 			}
 			cfg.SimulationGasLimit = &limit
 		}
 	}
-	// attach contract debugging to global "trace" flag
+
+	// Attach contract debugging to global "trace" flag
 	if v := opts.Get(server.FlagTrace); v != nil {
-		if cfg.ContractDebugMode, err = cast.ToBoolE(v); err != nil {
+		cfg.ContractDebugMode, err = cast.ToBoolE(v)
+		if err != nil {
 			return cfg, err
 		}
 	}
+
 	return cfg, nil
 }
 
@@ -280,7 +289,7 @@ func getExpectedLibwasmVersion() string {
 		panic("can't read build info")
 	}
 	for _, d := range buildInfo.Deps {
-		if d.Path != "github.com/CosmWasm/wasmvm/v2" {
+		if d.Path != "github.com/CosmWasm/wasmd/wasmvm/v2" {
 			continue
 		}
 		if d.Replace != nil {

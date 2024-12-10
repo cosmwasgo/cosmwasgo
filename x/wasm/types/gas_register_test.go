@@ -5,10 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	"github.com/stretchr/testify/assert"
 
 	storetypes "cosmossdk.io/store/types"
+
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 )
 
 func TestSetupContractCost(t *testing.T) {
@@ -306,7 +307,7 @@ func TestFromWasmVMGasConversion(t *testing.T) {
 			src: math.MaxUint64,
 			exp: math.MaxUint64,
 		},
-		"missconfigured": {
+		"misconfigured": {
 			srcConfig: WasmGasRegisterConfig{
 				GasMultiplier: 0,
 			},

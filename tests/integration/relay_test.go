@@ -6,10 +6,8 @@ import (
 	"testing"
 	"time"
 
-	wasmvm "github.com/CosmWasm/wasmvm/v2"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	"github.com/stretchr/testify/assert"
@@ -22,6 +20,8 @@ import (
 
 	"github.com/CosmWasm/wasmd/app"
 	wasmibctesting "github.com/CosmWasm/wasmd/tests/ibctesting"
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper/wasmtesting"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
@@ -46,6 +46,7 @@ func TestFromIBCTransferToContract(t *testing.T) {
 		"ack": {
 			contract: &ackReceiverContract{},
 			setupContract: func(t *testing.T, contract wasmtesting.IBCContractCallbacks, chain *wasmibctesting.TestChain) {
+				t.Helper()
 				c := contract.(*ackReceiverContract)
 				c.t = t
 				c.chain = chain
@@ -58,6 +59,7 @@ func TestFromIBCTransferToContract(t *testing.T) {
 		"nack": {
 			contract: &nackReceiverContract{},
 			setupContract: func(t *testing.T, contract wasmtesting.IBCContractCallbacks, chain *wasmibctesting.TestChain) {
+				t.Helper()
 				c := contract.(*nackReceiverContract)
 				c.t = t
 			},
@@ -69,6 +71,7 @@ func TestFromIBCTransferToContract(t *testing.T) {
 		"error": {
 			contract: &errorReceiverContract{},
 			setupContract: func(t *testing.T, contract wasmtesting.IBCContractCallbacks, chain *wasmibctesting.TestChain) {
+				t.Helper()
 				c := contract.(*errorReceiverContract)
 				c.t = t
 			},
