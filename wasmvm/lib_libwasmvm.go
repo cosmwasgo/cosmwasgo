@@ -21,6 +21,11 @@ type VM struct {
 	printDebug bool
 }
 
+// Cache is a wrapper around the WasmCache struct
+type Cache struct {
+	wasmCache *api.WasmCache
+}
+
 // NewVM creates a new VM.
 //
 // `dataDir` is a base directory for Wasm blobs and various caches.
@@ -713,3 +718,14 @@ func DeserializeResponse(gasLimit uint64, deserCost types.UFraction, gasReport *
 
 	return nil
 }
+
+// Add adapter functions that map between Cache and WasmCache
+func InitCache(config types.VMConfig) (*Cache, error) {
+	wasmCache, err := api.InitWasmCache(config)
+	if err != nil {
+		return nil, err
+	}
+	return &Cache{wasmCache: wasmCache}, nil
+}
+
+// Similar adapter functions for other methods...

@@ -294,3 +294,15 @@ func TestQueueIteratorLimit(t *testing.T) {
 	_, _, err = Query(cache, checksum, env, query, &igasMeter, store, api, &querier, gasLimit, TESTING_PRINT_DEBUG)
 	require.ErrorContains(t, err, "Reached iterator limit (32768)")
 }
+
+func TestIterator(t *testing.T) {
+	cache, err := InitWasmCache(types.VMConfig{})
+	require.NoError(t, err)
+	defer ReleaseCache(cache)
+}
+
+func TestReverseIterator(t *testing.T) {
+	cache, err := InitWasmCache(types.VMConfig{})
+	require.NoError(t, err)
+	defer ReleaseCache(cache)
+}

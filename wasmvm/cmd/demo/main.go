@@ -5,7 +5,7 @@ import (
 	"math"
 	"os"
 
-	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
+	"github.com/CosmWasm/wasmd/wasmvm/v2/internal/api"
 )
 
 const (
@@ -21,7 +21,7 @@ func main() {
 	file := os.Args[1]
 
 	if file == "version" {
-		libwasmvmVersion, err := wasmvm.LibwasmvmVersion()
+		libwasmvmVersion, err := api.GetLibwasmvmVersion()
 		if err != nil {
 			panic(err)
 		}
@@ -40,10 +40,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	vm, err := wasmvm.NewVM("tmp", SUPPORTED_CAPABILITIES, MEMORY_LIMIT, PRINT_DEBUG, CACHE_SIZE)
-	if err != nil {
-		panic(err)
-	}
+
+	// Create a new VM instance using the internal API
+	vm := api.NewVM("tmp", SUPPORTED_CAPABILITIES, MEMORY_LIMIT, PRINT_DEBUG, CACHE_SIZE)
 
 	checksum, _, err := vm.StoreCode(bz, math.MaxUint64)
 	if err != nil {

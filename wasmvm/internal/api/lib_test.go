@@ -41,7 +41,7 @@ func TestInitAndReleaseCache(t *testing.T) {
 			InstanceMemoryLimitBytes: types.NewSizeMebi(TESTING_MEMORY_LIMIT),
 		},
 	}
-	cache, err := InitCache(config)
+	cache, err := InitWasmCache(config)
 	require.NoError(t, err)
 	ReleaseCache(cache)
 }
@@ -62,7 +62,7 @@ func TestInitCacheWorksForNonExistentDir(t *testing.T) {
 			InstanceMemoryLimitBytes: types.NewSizeMebi(TESTING_MEMORY_LIMIT),
 		},
 	}
-	cache, err := InitCache(config)
+	cache, err := InitWasmCache(config)
 	require.NoError(t, err)
 	ReleaseCache(cache)
 }
@@ -80,7 +80,7 @@ func TestInitCacheErrorsForBrokenDir(t *testing.T) {
 			InstanceMemoryLimitBytes: types.NewSizeMebi(TESTING_MEMORY_LIMIT),
 		},
 	}
-	_, err := InitCache(config)
+	_, err := InitWasmCache(config)
 	require.ErrorContains(t, err, "Could not create base directory")
 }
 
@@ -97,7 +97,7 @@ func TestInitLockingPreventsConcurrentAccess(t *testing.T) {
 			InstanceMemoryLimitBytes: types.NewSizeMebi(TESTING_MEMORY_LIMIT),
 		},
 	}
-	cache1, err1 := InitCache(config1)
+	cache1, err1 := InitWasmCache(config1)
 	require.NoError(t, err1)
 
 	config2 := types.VMConfig{
@@ -108,7 +108,7 @@ func TestInitLockingPreventsConcurrentAccess(t *testing.T) {
 			InstanceMemoryLimitBytes: types.NewSizeMebi(TESTING_MEMORY_LIMIT),
 		},
 	}
-	_, err2 := InitCache(config2)
+	_, err2 := InitWasmCache(config2)
 	require.ErrorContains(t, err2, "Could not lock exclusive.lock")
 
 	ReleaseCache(cache1)
@@ -122,7 +122,7 @@ func TestInitLockingPreventsConcurrentAccess(t *testing.T) {
 			InstanceMemoryLimitBytes: types.NewSizeMebi(TESTING_MEMORY_LIMIT),
 		},
 	}
-	cache3, err3 := InitCache(config3)
+	cache3, err3 := InitWasmCache(config3)
 	require.NoError(t, err3)
 	ReleaseCache(cache3)
 }
@@ -146,7 +146,7 @@ func TestInitLockingAllowsMultipleInstancesInDifferentDirs(t *testing.T) {
 			InstanceMemoryLimitBytes: types.NewSizeMebi(TESTING_MEMORY_LIMIT),
 		},
 	}
-	cache1, err1 := InitCache(config1)
+	cache1, err1 := InitWasmCache(config1)
 	require.NoError(t, err1)
 	config2 := types.VMConfig{
 		Cache: types.CacheOptions{
@@ -156,7 +156,7 @@ func TestInitLockingAllowsMultipleInstancesInDifferentDirs(t *testing.T) {
 			InstanceMemoryLimitBytes: types.NewSizeMebi(TESTING_MEMORY_LIMIT),
 		},
 	}
-	cache2, err2 := InitCache(config2)
+	cache2, err2 := InitWasmCache(config2)
 	require.NoError(t, err2)
 	config3 := types.VMConfig{
 		Cache: types.CacheOptions{
@@ -166,7 +166,7 @@ func TestInitLockingAllowsMultipleInstancesInDifferentDirs(t *testing.T) {
 			InstanceMemoryLimitBytes: types.NewSizeMebi(TESTING_MEMORY_LIMIT),
 		},
 	}
-	cache3, err3 := InitCache(config3)
+	cache3, err3 := InitWasmCache(config3)
 	require.NoError(t, err3)
 
 	ReleaseCache(cache1)
@@ -186,7 +186,7 @@ func TestInitCacheEmptyCapabilities(t *testing.T) {
 			InstanceMemoryLimitBytes: types.NewSizeMebi(TESTING_MEMORY_LIMIT),
 		},
 	}
-	cache, err := InitCache(config)
+	cache, err := InitWasmCache(config)
 	require.NoError(t, err)
 	ReleaseCache(cache)
 }
@@ -202,7 +202,7 @@ func withCache(t testing.TB) (Cache, func()) {
 			InstanceMemoryLimitBytes: types.NewSizeMebi(TESTING_MEMORY_LIMIT),
 		},
 	}
-	cache, err := InitCache(config)
+	cache, err := InitWasmCache(config)
 	require.NoError(t, err)
 
 	cleanup := func() {
@@ -219,12 +219,12 @@ func TestStoreCodeAndGetCode(t *testing.T) {
 	wasm, err := os.ReadFile("../../testdata/hackatom.wasm")
 	require.NoError(t, err)
 
-	checksum, err := StoreCode(cache, wasm)
+	checksum, err := StoreCode(cache.(*WasmCache), wasm)
 	require.NoError(t, err)
 	expectedChecksum := sha256.Sum256(wasm)
 	require.Equal(t, expectedChecksum[:], checksum)
 
-	code, err := GetCode(cache, checksum)
+	code, err := GetCode(cache.(*WasmCache), checksum)
 	require.NoError(t, err)
 	require.Equal(t, wasm, code)
 }
@@ -236,15 +236,15 @@ func TestRemoveCode(t *testing.T) {
 	wasm, err := os.ReadFile("../../testdata/hackatom.wasm")
 	require.NoError(t, err)
 
-	checksum, err := StoreCode(cache, wasm)
+	checksum, err := StoreCode(cache.(*WasmCache), wasm)
 	require.NoError(t, err)
 
 	// First removal works
-	err = RemoveCode(cache, checksum)
+	err = RemoveCode(cache.(*WasmCache), checksum)
 	require.NoError(t, err)
 
 	// Second removal fails
-	err = RemoveCode(cache, checksum)
+	err = RemoveCode(cache.(*WasmCache), checksum)
 	require.ErrorContains(t, err, "Wasm file does not exist")
 }
 
@@ -253,7 +253,7 @@ func TestStoreCodeFailsWithBadData(t *testing.T) {
 	defer cleanup()
 
 	wasm := []byte("some invalid data")
-	_, err := StoreCode(cache, wasm)
+	_, err := StoreCode(cache.(*WasmCache), wasm)
 	require.Error(t, err)
 }
 
@@ -264,12 +264,12 @@ func TestStoreCodeUnchecked(t *testing.T) {
 	wasm, err := os.ReadFile("../../testdata/hackatom.wasm")
 	require.NoError(t, err)
 
-	checksum, err := StoreCodeUnchecked(cache, wasm)
+	checksum, err := StoreCodeUnchecked(cache.(*WasmCache), wasm)
 	require.NoError(t, err)
 	expectedChecksum := sha256.Sum256(wasm)
 	require.Equal(t, expectedChecksum[:], checksum)
 
-	code, err := GetCode(cache, checksum)
+	code, err := GetCode(cache.(*WasmCache), checksum)
 	require.NoError(t, err)
 	require.Equal(t, wasm, code)
 }
@@ -281,14 +281,14 @@ func TestPin(t *testing.T) {
 	wasm, err := os.ReadFile("../../testdata/hackatom.wasm")
 	require.NoError(t, err)
 
-	checksum, err := StoreCode(cache, wasm)
+	checksum, err := StoreCode(cache.(*WasmCache), wasm)
 	require.NoError(t, err)
 
-	err = Pin(cache, checksum)
+	err = Pin(cache.(*WasmCache), checksum)
 	require.NoError(t, err)
 
 	// Can be called again with no effect
-	err = Pin(cache, checksum)
+	err = Pin(cache.(*WasmCache), checksum)
 	require.NoError(t, err)
 }
 
@@ -299,12 +299,12 @@ func TestPinErrors(t *testing.T) {
 
 	// Nil checksum (errors in wasmvm Rust code)
 	var nilChecksum []byte
-	err = Pin(cache, nilChecksum)
+	err = Pin(cache.(*WasmCache), nilChecksum)
 	require.ErrorContains(t, err, "Null/Nil argument: checksum")
 
 	// Checksum too short (errors in wasmvm Rust code)
 	brokenChecksum := []byte{0x3f, 0xd7, 0x5a, 0x76}
-	err = Pin(cache, brokenChecksum)
+	err = Pin(cache.(*WasmCache), brokenChecksum)
 	require.ErrorContains(t, err, "Checksum not of length 32")
 
 	// Unknown checksum (errors in cosmwasm-vm)
@@ -313,7 +313,7 @@ func TestPinErrors(t *testing.T) {
 		0x4f, 0xe2, 0xa1, 0x42, 0x3a, 0x3e, 0x75, 0xef, 0xd3, 0xe6, 0x77, 0x8a, 0x14, 0x28,
 		0x84, 0x22, 0x71, 0x04,
 	}
-	err = Pin(cache, unknownChecksum)
+	err = Pin(cache.(*WasmCache), unknownChecksum)
 	require.ErrorContains(t, err, "Error opening Wasm file for reading")
 }
 
@@ -324,17 +324,17 @@ func TestUnpin(t *testing.T) {
 	wasm, err := os.ReadFile("../../testdata/hackatom.wasm")
 	require.NoError(t, err)
 
-	checksum, err := StoreCode(cache, wasm)
+	checksum, err := StoreCode(cache.(*WasmCache), wasm)
 	require.NoError(t, err)
 
-	err = Pin(cache, checksum)
+	err = Pin(cache.(*WasmCache), checksum)
 	require.NoError(t, err)
 
-	err = Unpin(cache, checksum)
+	err = Unpin(cache.(*WasmCache), checksum)
 	require.NoError(t, err)
 
 	// Can be called again with no effect
-	err = Unpin(cache, checksum)
+	err = Unpin(cache.(*WasmCache), checksum)
 	require.NoError(t, err)
 }
 
@@ -345,12 +345,12 @@ func TestUnpinErrors(t *testing.T) {
 
 	// Nil checksum (errors in wasmvm Rust code)
 	var nilChecksum []byte
-	err = Unpin(cache, nilChecksum)
+	err = Unpin(cache.(*WasmCache), nilChecksum)
 	require.ErrorContains(t, err, "Null/Nil argument: checksum")
 
 	// Checksum too short (errors in wasmvm Rust code)
 	brokenChecksum := []byte{0x3f, 0xd7, 0x5a, 0x76}
-	err = Unpin(cache, brokenChecksum)
+	err = Unpin(cache.(*WasmCache), brokenChecksum)
 	require.ErrorContains(t, err, "Checksum not of length 32")
 
 	// No error case triggered in cosmwasm-vm is known right now
@@ -361,18 +361,18 @@ func TestGetMetrics(t *testing.T) {
 	defer cleanup()
 
 	// GetMetrics 1
-	metrics, err := GetMetrics(cache)
+	metrics, err := GetMetrics(cache.(*WasmCache))
 	require.NoError(t, err)
 	assert.Equal(t, &types.Metrics{}, metrics)
 
 	// Store contract
 	wasm, err := os.ReadFile("../../testdata/hackatom.wasm")
 	require.NoError(t, err)
-	checksum, err := StoreCode(cache, wasm)
+	checksum, err := StoreCode(cache.(*WasmCache), wasm)
 	require.NoError(t, err)
 
 	// GetMetrics 2
-	metrics, err = GetMetrics(cache)
+	metrics, err = GetMetrics(cache.(*WasmCache))
 	require.NoError(t, err)
 	assert.Equal(t, &types.Metrics{}, metrics)
 
@@ -385,11 +385,11 @@ func TestGetMetrics(t *testing.T) {
 	env := MockEnvBin(t)
 	info := MockInfoBin(t, "creator")
 	msg1 := []byte(`{"verifier": "fred", "beneficiary": "bob"}`)
-	_, _, err = Instantiate(cache, checksum, env, info, msg1, &igasMeter, store, api, &querier, TESTING_GAS_LIMIT, TESTING_PRINT_DEBUG)
+	_, _, err = Instantiate(cache.(*WasmCache), checksum, env, info, msg1, &igasMeter, store, api, &querier, TESTING_GAS_LIMIT, TESTING_PRINT_DEBUG)
 	require.NoError(t, err)
 
 	// GetMetrics 3
-	metrics, err = GetMetrics(cache)
+	metrics, err = GetMetrics(cache.(*WasmCache))
 	assert.NoError(t, err)
 	require.Equal(t, uint32(0), metrics.HitsMemoryCache)
 	require.Equal(t, uint32(1), metrics.HitsFsCache)
@@ -398,11 +398,11 @@ func TestGetMetrics(t *testing.T) {
 
 	// Instantiate 2
 	msg2 := []byte(`{"verifier": "fred", "beneficiary": "susi"}`)
-	_, _, err = Instantiate(cache, checksum, env, info, msg2, &igasMeter, store, api, &querier, TESTING_GAS_LIMIT, TESTING_PRINT_DEBUG)
+	_, _, err = Instantiate(cache.(*WasmCache), checksum, env, info, msg2, &igasMeter, store, api, &querier, TESTING_GAS_LIMIT, TESTING_PRINT_DEBUG)
 	require.NoError(t, err)
 
 	// GetMetrics 4
-	metrics, err = GetMetrics(cache)
+	metrics, err = GetMetrics(cache.(*WasmCache))
 	assert.NoError(t, err)
 	require.Equal(t, uint32(1), metrics.HitsMemoryCache)
 	require.Equal(t, uint32(1), metrics.HitsFsCache)
@@ -1210,7 +1210,7 @@ func createContract(t testing.TB, cache Cache, wasmFile string) []byte {
 }
 
 // exec runs the handle tx with the given signer
-func exec(t *testing.T, cache Cache, checksum []byte, signer types.HumanAddress, store types.KVStore, api *types.GoAPI, querier Querier, gasExpected uint64) types.ContractResult {
+func exec(t *testing.T, cache Cache, checksum []byte, signer types.HumanAddress, store types.KVStore, api *types.GoAPI, querier types.Querier, gasExpected uint64) types.ContractResult {
 	gasMeter := NewMockGasMeter(TESTING_GAS_LIMIT)
 	igasMeter := types.GasMeter(gasMeter)
 	env := MockEnvBin(t)
