@@ -51,6 +51,7 @@ require (
 	github.com/distribution/reference v0.6.0
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/viper v1.19.0
+	github.com/tetratelabs/wazero v1.8.2
 	google.golang.org/genproto/googleapis/api v0.0.0-20240814211410-ddb44dafa142
 )
 

@@ -6,8 +6,6 @@ require (
 	github.com/google/btree v1.1.3
 	github.com/shamaton/msgpack/v2 v2.2.0
 	github.com/stretchr/testify v1.10.0
-	github.com/tetratelabs/wazero v1.8.2
-	golang.org/x/sys v0.26.0
 )
 
 require (
