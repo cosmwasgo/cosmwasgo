@@ -23,12 +23,12 @@ var (
 	latestCallIDMutex sync.Mutex
 )
 
-// startCall is called at the beginning of a contract call to create a new frame in iteratorFrames.
-// It updates latestCallID for generating a new call ID.
+// startCall initializes a new frame for iterator management, should be called at the beginning of a contract execution.
 func startCall() uint64 {
-	latestCallIDMutex.Lock()
-	defer latestCallIDMutex.Unlock()
-	latestCallID += 1
+	iteratorFramesMutex.Lock()
+	defer iteratorFramesMutex.Unlock()
+	latestCallID++
+	iteratorFrames[latestCallID] = frame{}
 	return latestCallID
 }
 

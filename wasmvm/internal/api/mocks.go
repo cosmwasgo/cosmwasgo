@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math"
 	"strings"
 	"testing"
@@ -337,53 +336,27 @@ const (
 	CostHuman     uint64 = 550
 )
 
-func MockCanonicalizeAddress(human string) ([]byte, uint64, error) {
-	if len(human) > CanonicalLength {
-		return nil, 0, fmt.Errorf("human encoding too long")
-	}
-	res := make([]byte, CanonicalLength)
-	copy(res, []byte(human))
-	return res, CostCanonical, nil
+// MockAPI is an implementation of types.GoAPI for testing purposes.
+type MockAPI struct{}
+
+func (api *MockAPI) CanonicalAddress(human string) ([]byte, uint64, error) {
+	// Implement the mock logic
 }
 
-func MockHumanizeAddress(canon []byte) (string, uint64, error) {
-	if len(canon) != CanonicalLength {
-		return "", 0, fmt.Errorf("wrong canonical length")
-	}
-	cut := CanonicalLength
-	for i, v := range canon {
-		if v == 0 {
-			cut = i
-			break
-		}
-	}
-	human := string(canon[:cut])
-	return human, CostHuman, nil
+func (api *MockAPI) HumanAddress(canon []byte) (string, uint64, error) {
+	// Implement the mock logic
 }
 
-func MockValidateAddress(input string) (gasCost uint64, _ error) {
-	canonicalized, gasCostCanonicalize, err := MockCanonicalizeAddress(input)
-	gasCost += gasCostCanonicalize
-	if err != nil {
-		return gasCost, err
-	}
-	humanized, gasCostHumanize, err := MockHumanizeAddress(canonicalized)
-	gasCost += gasCostHumanize
-	if err != nil {
-		return gasCost, err
-	}
-	if humanized != strings.ToLower(input) {
-		return gasCost, fmt.Errorf("address validation failed")
-	}
-
-	return gasCost, nil
+func (api *MockAPI) ValidateAddress(human string) (uint64, error) {
+	// Implement the mock logic
 }
 
+// NewMockAPI creates a new instance of MockAPI.
 func NewMockAPI() *types.GoAPI {
 	return &types.GoAPI{
-		HumanizeAddress:     MockHumanizeAddress,
-		CanonicalizeAddress: MockCanonicalizeAddress,
-		ValidateAddress:     MockValidateAddress,
+		HumanizeAddress:     MockAPI{}.HumanAddress,
+		CanonicalizeAddress: MockAPI{}.CanonicalAddress,
+		ValidateAddress:     MockAPI{}.ValidateAddress,
 	}
 }
 
