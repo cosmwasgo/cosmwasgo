@@ -33,6 +33,7 @@ import (
 
 	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 )
 
 func TestGenesisExportImport(t *testing.T) {
@@ -680,7 +681,7 @@ func setupKeeper(t *testing.T) (*Keeper, sdk.Context) {
 	// also registering gov interfaces for nested Any type
 	v1beta1.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 
-	wasmConfig := types.DefaultWasmConfig()
+	nodeConfig := types.DefaultNodeConfig()
 
 	// NewKeeper is a constructor for Keeper
 	srcKeeper := NewKeeper(
@@ -698,7 +699,8 @@ func setupKeeper(t *testing.T) (*Keeper, sdk.Context) {
 		nil,
 		nil,
 		tempDir,
-		wasmConfig,
+		nodeConfig,
+		wasmtypes.VMConfig{},
 		AvailableCapabilities,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)

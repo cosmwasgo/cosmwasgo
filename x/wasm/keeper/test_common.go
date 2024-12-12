@@ -215,7 +215,7 @@ func CreateDefaultTestInput(t testing.TB) (sdk.Context, TestKeepers) {
 func CreateTestInput(t testing.TB, isCheckTx bool, availableCapabilities []string, opts ...Option) (sdk.Context, TestKeepers) {
 	t.Helper()
 	// Load default wasm config
-	return createTestInput(t, isCheckTx, availableCapabilities, types.DefaultWasmConfig(), dbm.NewMemDB(), opts...)
+	return createTestInput(t, isCheckTx, availableCapabilities, types.DefaultNodeConfig(), types.VMConfig{}, dbm.NewMemDB(), opts...)
 }
 
 // encoders can be nil to accept the defaults, or set it to override some of the message handlers (like default)
@@ -223,7 +223,8 @@ func createTestInput(
 	t testing.TB,
 	isCheckTx bool,
 	availableCapabilities []string,
-	wasmConfig types.WasmConfig,
+	nodeConfig types.NodeConfig,
+	vmConfig types.VMConfig,
 	db dbm.DB,
 	opts ...Option,
 ) (sdk.Context, TestKeepers) {
@@ -362,7 +363,7 @@ func createTestInput(
 
 	faucet := NewTestFaucet(t, ctx, bankKeeper, minttypes.ModuleName, sdk.NewCoin("stake", sdkmath.NewInt(100_000_000_000)))
 
-	// set some funds ot pay out validatores, based on code from:
+	// set some funds to pay out validators, based on code from:
 	// https://github.com/cosmos/cosmos-sdk/blob/fea231556aee4d549d7551a6190389c4328194eb/x/distribution/keeper/keeper_test.go#L50-L57
 	distrAcc := distKeeper.GetDistributionAccount(ctx)
 	faucet.Fund(ctx, distrAcc.GetAddress(), sdk.NewCoin("stake", sdkmath.NewInt(2000000)))
@@ -408,7 +409,8 @@ func createTestInput(
 		msgRouter,
 		querier,
 		tempDir,
-		wasmConfig,
+		nodeConfig,
+		vmConfig,
 		availableCapabilities,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		opts...,
