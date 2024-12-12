@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	wasmvm "github.com/CosmWasm/wasmvm/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -16,6 +15,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authztypes "github.com/cosmos/cosmos-sdk/x/authz"
+
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
 )
 
 func TestContractAuthzFilterValidate(t *testing.T) {
@@ -401,17 +402,20 @@ func TestValidateContractGrant(t *testing.T) {
 	}{
 		"all good": {
 			setup: func(t *testing.T) ContractGrant {
+				t.Helper()
 				return mustGrant(randBytes(ContractAddrLen), NewMaxCallsLimit(1), NewAllowAllMessagesFilter())
 			},
 		},
 		"invalid address": {
 			setup: func(t *testing.T) ContractGrant {
+				t.Helper()
 				return mustGrant([]byte{}, NewMaxCallsLimit(1), NewAllowAllMessagesFilter())
 			},
 			expErr: true,
 		},
 		"invalid limit": {
 			setup: func(t *testing.T) ContractGrant {
+				t.Helper()
 				return mustGrant(randBytes(ContractAddrLen), NewMaxCallsLimit(0), NewAllowAllMessagesFilter())
 			},
 			expErr: true,
@@ -419,12 +423,14 @@ func TestValidateContractGrant(t *testing.T) {
 
 		"invalid filter ": {
 			setup: func(t *testing.T) ContractGrant {
+				t.Helper()
 				return mustGrant(randBytes(ContractAddrLen), NewMaxCallsLimit(1), NewAcceptedMessageKeysFilter())
 			},
 			expErr: true,
 		},
 		"empty limit": {
 			setup: func(t *testing.T) ContractGrant {
+				t.Helper()
 				r := mustGrant(randBytes(ContractAddrLen), NewMaxCallsLimit(0), NewAllowAllMessagesFilter())
 				r.Limit = nil
 				return r
@@ -434,6 +440,7 @@ func TestValidateContractGrant(t *testing.T) {
 
 		"empty filter ": {
 			setup: func(t *testing.T) ContractGrant {
+				t.Helper()
 				r := mustGrant(randBytes(ContractAddrLen), NewMaxCallsLimit(1), NewAcceptedMessageKeysFilter())
 				r.Filter = nil
 				return r
@@ -442,6 +449,7 @@ func TestValidateContractGrant(t *testing.T) {
 		},
 		"wrong limit type": {
 			setup: func(t *testing.T) ContractGrant {
+				t.Helper()
 				r := mustGrant(randBytes(ContractAddrLen), NewMaxCallsLimit(0), NewAllowAllMessagesFilter())
 				r.Limit = r.Filter
 				return r
@@ -451,6 +459,7 @@ func TestValidateContractGrant(t *testing.T) {
 
 		"wrong filter type": {
 			setup: func(t *testing.T) ContractGrant {
+				t.Helper()
 				r := mustGrant(randBytes(ContractAddrLen), NewMaxCallsLimit(1), NewAcceptedMessageKeysFilter())
 				r.Filter = r.Limit
 				return r
@@ -483,44 +492,52 @@ func TestValidateContractAuthorization(t *testing.T) {
 	}{
 		"contract execution": {
 			setup: func(t *testing.T) validatable {
+				t.Helper()
 				return NewContractExecutionAuthorization(*validGrant)
 			},
 		},
 		"contract execution - duplicate grants": {
 			setup: func(t *testing.T) validatable {
+				t.Helper()
 				return NewContractExecutionAuthorization(*validGrant, *validGrant)
 			},
 		},
 		"contract execution - invalid grant": {
 			setup: func(t *testing.T) validatable {
+				t.Helper()
 				return NewContractExecutionAuthorization(*validGrant, *invalidGrant)
 			},
 			expErr: true,
 		},
 		"contract execution - empty grants": {
 			setup: func(t *testing.T) validatable {
+				t.Helper()
 				return NewContractExecutionAuthorization()
 			},
 			expErr: true,
 		},
 		"contract migration": {
 			setup: func(t *testing.T) validatable {
+				t.Helper()
 				return NewContractMigrationAuthorization(*validGrant)
 			},
 		},
 		"contract migration - duplicate grants": {
 			setup: func(t *testing.T) validatable {
+				t.Helper()
 				return NewContractMigrationAuthorization(*validGrant, *validGrant)
 			},
 		},
 		"contract migration - invalid grant": {
 			setup: func(t *testing.T) validatable {
+				t.Helper()
 				return NewContractMigrationAuthorization(*validGrant, *invalidGrant)
 			},
 			expErr: true,
 		},
 		"contract migration - empty grant": {
 			setup: func(t *testing.T) validatable {
+				t.Helper()
 				return NewContractMigrationAuthorization()
 			},
 			expErr: true,
@@ -779,6 +796,7 @@ func TestValidateCodeGrant(t *testing.T) {
 }
 
 func TestValidateStoreCodeAuthorization(t *testing.T) {
+	t.Helper()
 	validGrant, err := NewCodeGrant([]byte("any_valid_checksum"), &AllowEverybody)
 	require.NoError(t, err)
 	validGrantUpperCase, err := NewCodeGrant([]byte("ANY_VALID_CHECKSUM"), &AllowEverybody)
@@ -796,45 +814,53 @@ func TestValidateStoreCodeAuthorization(t *testing.T) {
 	}{
 		"all good": {
 			setup: func(t *testing.T) []CodeGrant {
+				t.Helper()
 				return []CodeGrant{*validGrant}
 			},
 		},
 		"wildcard grant": {
 			setup: func(t *testing.T) []CodeGrant {
+				t.Helper()
 				return []CodeGrant{*wildcardGrant}
 			},
 		},
 		"empty permission grant": {
 			setup: func(t *testing.T) []CodeGrant {
+				t.Helper()
 				return []CodeGrant{*emptyPermissionGrant}
 			},
 		},
 		"duplicate grants - wildcard": {
 			setup: func(t *testing.T) []CodeGrant {
+				t.Helper()
 				return []CodeGrant{*wildcardGrant, *validGrant}
 			},
 			expErr: true,
 		},
 		"duplicate grants - same case code hash": {
 			setup: func(t *testing.T) []CodeGrant {
+				t.Helper()
 				return []CodeGrant{*validGrant, *validGrant}
 			},
 			expErr: true,
 		},
 		"duplicate grants - different case code hash": {
 			setup: func(t *testing.T) []CodeGrant {
+				t.Helper()
 				return []CodeGrant{*validGrant, *validGrantUpperCase}
 			},
 			expErr: true,
 		},
 		"invalid grant": {
 			setup: func(t *testing.T) []CodeGrant {
+				t.Helper()
 				return []CodeGrant{*validGrant, *invalidGrant}
 			},
 			expErr: true,
 		},
 		"empty grants": {
 			setup: func(t *testing.T) []CodeGrant {
+				t.Helper()
 				return []CodeGrant{}
 			},
 			expErr: true,

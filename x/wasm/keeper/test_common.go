@@ -102,8 +102,9 @@ var moduleBasics = module.NewBasicManager(
 	vesting.AppModuleBasic{},
 )
 
-func MakeTestCodec(t testing.TB) codec.Codec {
-	return MakeEncodingConfig(t).Codec
+func MakeTestCodec(tb testing.TB) codec.Codec {
+	tb.Helper()
+	return MakeEncodingConfig(tb).Codec
 }
 
 func MakeEncodingConfig(_ testing.TB) moduletestutil.TestEncodingConfig {
@@ -206,13 +207,15 @@ type TestKeepers struct {
 
 // CreateDefaultTestInput common settings for CreateTestInput
 func CreateDefaultTestInput(t testing.TB) (sdk.Context, TestKeepers) {
+	t.Helper()
 	return CreateTestInput(t, false, []string{"staking"})
 }
 
 // CreateTestInput encoders can be nil to accept the defaults, or set it to override some of the message handlers (like default)
 func CreateTestInput(t testing.TB, isCheckTx bool, availableCapabilities []string, opts ...Option) (sdk.Context, TestKeepers) {
+	t.Helper()
 	// Load default wasm config
-	return createTestInput(t, isCheckTx, availableCapabilities, types.DefaultWasmConfig(), dbm.NewMemDB(), opts...)
+	return createTestInput(t, isCheckTx, availableCapabilities, types.DefaultNodeConfig(), types.VMConfig{}, dbm.NewMemDB(), opts...)
 }
 
 // encoders can be nil to accept the defaults, or set it to override some of the message handlers (like default)
@@ -220,7 +223,8 @@ func createTestInput(
 	t testing.TB,
 	isCheckTx bool,
 	availableCapabilities []string,
-	wasmConfig types.WasmConfig,
+	nodeConfig types.NodeConfig,
+	vmConfig types.VMConfig,
 	db dbm.DB,
 	opts ...Option,
 ) (sdk.Context, TestKeepers) {
@@ -359,7 +363,7 @@ func createTestInput(
 
 	faucet := NewTestFaucet(t, ctx, bankKeeper, minttypes.ModuleName, sdk.NewCoin("stake", sdkmath.NewInt(100_000_000_000)))
 
-	// set some funds ot pay out validatores, based on code from:
+	// set some funds to pay out validators, based on code from:
 	// https://github.com/cosmos/cosmos-sdk/blob/fea231556aee4d549d7551a6190389c4328194eb/x/distribution/keeper/keeper_test.go#L50-L57
 	distrAcc := distKeeper.GetDistributionAccount(ctx)
 	faucet.Fund(ctx, distrAcc.GetAddress(), sdk.NewCoin("stake", sdkmath.NewInt(2000000)))
@@ -405,7 +409,8 @@ func createTestInput(
 		msgRouter,
 		querier,
 		tempDir,
-		wasmConfig,
+		nodeConfig,
+		vmConfig,
 		availableCapabilities,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		opts...,
@@ -690,6 +695,7 @@ type ExampleInstance struct {
 
 // InstantiateReflectExampleContract load and instantiate the "./testdata/reflect_2_0.wasm" contract
 func InstantiateReflectExampleContract(t testing.TB, ctx sdk.Context, keepers TestKeepers) ExampleInstance {
+	t.Helper()
 	example := StoreReflectContract(t, ctx, keepers)
 	initialAmount := sdk.NewCoins(sdk.NewInt64Coin("denom", 100))
 	label := "reflect contract"
@@ -706,6 +712,7 @@ func InstantiateReflectExampleContract(t testing.TB, ctx sdk.Context, keepers Te
 
 // InstantiateReflectExampleContractWithPortID load and instantiate the "./testdata/reflect_2_0.wasm" contract with defined port ID
 func InstantiateReflectExampleContractWithPortID(t testing.TB, ctx sdk.Context, keepers TestKeepers, portID string) ExampleInstance {
+	t.Helper()
 	example := StoreReflectContract(t, ctx, keepers)
 	initialAmount := sdk.NewCoins(sdk.NewInt64Coin("denom", 100))
 	label := "reflect contract with port id"
@@ -751,6 +758,7 @@ func (m IBCReflectExampleInstance) GetBytes(t testing.TB) []byte {
 
 // InstantiateIBCReflectContract load and instantiate the "./testdata/ibc_reflect.wasm" contract
 func InstantiateIBCReflectContract(t testing.TB, ctx sdk.Context, keepers TestKeepers) IBCReflectExampleInstance {
+	t.Helper()
 	reflectID := StoreReflectContract(t, ctx, keepers).CodeID
 	ibcReflectID := StoreIBCReflectContract(t, ctx, keepers).CodeID
 
@@ -791,10 +799,11 @@ func (m BurnerExampleInitMsg) GetBytes(t testing.TB) []byte {
 	return initMsgBz
 }
 
-func fundAccounts(t testing.TB, ctx sdk.Context, am authkeeper.AccountKeeper, bank bankkeeper.Keeper, addr sdk.AccAddress, coins sdk.Coins) {
+func fundAccounts(tb testing.TB, ctx sdk.Context, am authkeeper.AccountKeeper, bank bankkeeper.Keeper, addr sdk.AccAddress, coins sdk.Coins) {
+	tb.Helper()
 	acc := am.NewAccountWithAddress(ctx, addr)
 	am.SetAccount(ctx, acc)
-	NewTestFaucet(t, ctx, bank, minttypes.ModuleName, coins...).Fund(ctx, addr, coins...)
+	NewTestFaucet(tb, ctx, bank, minttypes.ModuleName, coins...).Fund(ctx, addr, coins...)
 }
 
 var keyCounter uint64

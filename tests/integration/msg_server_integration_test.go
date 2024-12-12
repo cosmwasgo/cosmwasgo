@@ -6,8 +6,6 @@ import (
 	"testing"
 	"time"
 
-	wasmvm "github.com/CosmWasm/wasmvm/v2"
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,6 +14,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/CosmWasm/wasmd/app"
+	wasmvm "github.com/CosmWasm/wasmd/wasmvm/v2"
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
 )
@@ -132,7 +132,7 @@ func TestUpdateParams(t *testing.T) {
 			require.NoError(t, err)
 
 			// when
-			rsp, err := wasmApp.MsgServiceRouter().Handler(&spec.src)(ctx, &spec.src) //nolint:gosec
+			rsp, err := wasmApp.MsgServiceRouter().Handler(&spec.src)(ctx, &spec.src)
 			require.NoError(t, err)
 			var result types.MsgUpdateParamsResponse
 			require.NoError(t, wasmApp.AppCodec().Unmarshal(rsp.Data, &result))
@@ -223,7 +223,7 @@ func TestAddCodeUploadParamsAddresses(t *testing.T) {
 			require.NoError(t, err)
 
 			// when
-			rsp, err := wasmApp.MsgServiceRouter().Handler(&spec.src)(ctx, &spec.src) //nolint:gosec
+			rsp, err := wasmApp.MsgServiceRouter().Handler(&spec.src)(ctx, &spec.src)
 			if spec.expErr {
 				require.Error(t, err)
 				require.Nil(t, rsp)
@@ -319,7 +319,7 @@ func TestRemoveCodeUploadParamsAddresses(t *testing.T) {
 			require.NoError(t, err)
 
 			// when
-			rsp, err := wasmApp.MsgServiceRouter().Handler(&spec.src)(ctx, &spec.src) //nolint:gosec
+			rsp, err := wasmApp.MsgServiceRouter().Handler(&spec.src)(ctx, &spec.src)
 			if spec.expErr {
 				require.Error(t, err)
 				require.Nil(t, rsp)

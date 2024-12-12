@@ -49,7 +49,7 @@ func (AccessType) EnumDescriptor() ([]byte, []int) {
 
 // AccessTypeParam
 type AccessTypeParam struct {
-	Value AccessType `protobuf:"varint,1,opt,name=value,proto3,enum=cosmwasm.wasm.v1.AccessType" json:"value,omitempty" yaml:"value"`
+	Value AccessType `json:"value,omitempty" protobuf:"varint,1,opt,name=value,proto3,enum=cosmwasm.wasm.v1.AccessType" yaml:"value"`
 }
 
 func (m *AccessTypeParam) Reset()         { *m = AccessTypeParam{} }
@@ -92,11 +92,11 @@ var xxx_messageInfo_AccessTypeParam proto.InternalMessageInfo
 
 // AccessConfig access control type.
 type AccessConfig struct {
-	Permission AccessType `protobuf:"varint,1,opt,name=permission,proto3,enum=cosmwasm.wasm.v1.AccessType" json:"permission,omitempty" yaml:"permission"`
+	Permission AccessType `json:"permission,omitempty" protobuf:"varint,1,opt,name=permission,proto3,enum=cosmwasm.wasm.v1.AccessType" yaml:"permission"`
 	// Address
 	// Deprecated: replaced by addresses
-	Address   string   `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty" yaml:"address"`
-	Addresses []string `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty" yaml:"addresses"`
+	Address   string   `json:"address,omitempty"   protobuf:"bytes,2,opt,name=address,proto3"   yaml:"address"`
+	Addresses []string `json:"addresses,omitempty" protobuf:"bytes,3,rep,name=addresses,proto3" yaml:"addresses"`
 }
 
 func (m *AccessConfig) Reset()         { *m = AccessConfig{} }
@@ -139,8 +139,8 @@ var xxx_messageInfo_AccessConfig proto.InternalMessageInfo
 
 // Params defines the set of wasm parameters.
 type Params struct {
-	CodeUploadAccess             AccessConfig `protobuf:"bytes,1,opt,name=code_upload_access,json=codeUploadAccess,proto3" json:"code_upload_access" yaml:"code_upload_access"`
-	InstantiateDefaultPermission AccessType   `protobuf:"varint,2,opt,name=instantiate_default_permission,json=instantiateDefaultPermission,proto3,enum=cosmwasm.wasm.v1.AccessType" json:"instantiate_default_permission,omitempty" yaml:"instantiate_default_permission"`
+	CodeUploadAccess             AccessConfig `json:"code_upload_access"                       protobuf:"bytes,1,opt,name=code_upload_access,json=codeUploadAccess,proto3"                                                           yaml:"code_upload_access"`
+	InstantiateDefaultPermission AccessType   `json:"instantiate_default_permission,omitempty" protobuf:"varint,2,opt,name=instantiate_default_permission,json=instantiateDefaultPermission,proto3,enum=cosmwasm.wasm.v1.AccessType" yaml:"instantiate_default_permission"`
 }
 
 func (p Params) String() string {
@@ -164,14 +164,13 @@ func (m *Params) XXX_Unmarshal(b []byte) error {
 func (m *Params) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_Params.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
 	}
+	b = b[:cap(b)]
+	n, err := m.MarshalToSizedBuffer(b)
+	if err != nil {
+		return nil, err
+	}
+	return b[:n], nil
 }
 
 func (m *Params) XXX_Merge(src proto.Message) {
@@ -191,11 +190,11 @@ var xxx_messageInfo_Params proto.InternalMessageInfo
 // CodeInfo is data for the uploaded contract WASM code
 type CodeInfo struct {
 	// CodeHash is the unique identifier created by wasmvm
-	CodeHash []byte `protobuf:"bytes,1,opt,name=code_hash,json=codeHash,proto3" json:"code_hash,omitempty"`
+	CodeHash []byte `json:"code_hash,omitempty" protobuf:"bytes,1,opt,name=code_hash,json=codeHash,proto3"`
 	// Creator address who initially stored the code
-	Creator string `protobuf:"bytes,2,opt,name=creator,proto3" json:"creator,omitempty"`
+	Creator string `json:"creator,omitempty" protobuf:"bytes,2,opt,name=creator,proto3"`
 	// InstantiateConfig access control to apply on contract creation, optional
-	InstantiateConfig AccessConfig `protobuf:"bytes,5,opt,name=instantiate_config,json=instantiateConfig,proto3" json:"instantiate_config"`
+	InstantiateConfig AccessConfig `json:"instantiate_config" protobuf:"bytes,5,opt,name=instantiate_config,json=instantiateConfig,proto3"`
 }
 
 func (m *CodeInfo) Reset()         { *m = CodeInfo{} }
@@ -212,14 +211,13 @@ func (m *CodeInfo) XXX_Unmarshal(b []byte) error {
 func (m *CodeInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
 		return xxx_messageInfo_CodeInfo.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
 	}
+	b = b[:cap(b)]
+	n, err := m.MarshalToSizedBuffer(b)
+	if err != nil {
+		return nil, err
+	}
+	return b[:n], nil
 }
 
 func (m *CodeInfo) XXX_Merge(src proto.Message) {
@@ -639,35 +637,35 @@ func (m *AccessConfig) Size() (n int) {
 	return n
 }
 
-func (m *Params) Size() (n int) {
-	if m == nil {
+func (p *Params) Size() (n int) {
+	if p == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = m.CodeUploadAccess.Size()
+	l = p.CodeUploadAccess.Size()
 	n += 1 + l + sovTypes(uint64(l))
-	if m.InstantiateDefaultPermission != 0 {
-		n += 1 + sovTypes(uint64(m.InstantiateDefaultPermission))
+	if p.InstantiateDefaultPermission != 0 {
+		n += 1 + sovTypes(uint64(p.InstantiateDefaultPermission))
 	}
 	return n
 }
 
-func (m *CodeInfo) Size() (n int) {
-	if m == nil {
+func (p *CodeInfo) Size() (n int) {
+	if p == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.CodeHash)
+	l = len(p.CodeHash)
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
-	l = len(m.Creator)
+	l = len(p.Creator)
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
-	l = m.InstantiateConfig.Size()
+	l = p.InstantiateConfig.Size()
 	n += 1 + l + sovTypes(uint64(l))
 	return n
 }
@@ -676,7 +674,7 @@ func sovTypes(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
 
-func (m *AccessTypeParam) Unmarshal(dAtA []byte) error {
+func (p *AccessTypeParam) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -709,7 +707,7 @@ func (m *AccessTypeParam) Unmarshal(dAtA []byte) error {
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
 			}
-			m.Value = 0
+			p.Value = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTypes
@@ -719,7 +717,7 @@ func (m *AccessTypeParam) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Value |= AccessType(b&0x7F) << shift
+				p.Value |= AccessType(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -1213,7 +1211,7 @@ func skipTypes(dAtA []byte) (n int, err error) {
 }
 
 var (
-	ErrInvalidLengthTypes        = fmt.Errorf("proto: negative length found during unmarshaling")
+	ErrInvalidLengthTypes        = fmt.Errorf("proto: negative length found during unmarshalling")
 	ErrIntOverflowTypes          = fmt.Errorf("proto: integer overflow")
 	ErrUnexpectedEndOfGroupTypes = fmt.Errorf("proto: unexpected end of group")
 )

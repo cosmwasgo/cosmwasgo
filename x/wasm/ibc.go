@@ -3,7 +3,6 @@ package wasm
 import (
 	"math"
 
-	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
@@ -15,6 +14,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	wasmvmtypes "github.com/CosmWasm/wasmd/wasmvm/v2/types"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmd/x/wasm/types"
 )
@@ -336,14 +336,14 @@ func (i IBCHandler) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Packet,
 // IBCSendPacketCallback implements the IBC Callbacks ContractKeeper interface
 // see https://github.com/cosmos/ibc-go/blob/main/docs/architecture/adr-008-app-caller-cbs.md#contractkeeper
 func (i IBCHandler) IBCSendPacketCallback(
-	cachedCtx sdk.Context,
-	sourcePort string,
-	sourceChannel string,
-	timeoutHeight clienttypes.Height,
-	timeoutTimestamp uint64,
-	packetData []byte,
-	contractAddress,
-	packetSenderAddress string,
+	_ sdk.Context, // cachedCtx is a cached context that is passed to the callback
+	_ string, // sourcePort is the port on the source chain
+	_ string, // sourceChannel is the channel on the source chain
+	_ clienttypes.Height, // timeoutHeight is the timeout height on the source chain
+	_ uint64, // timeoutTimestamp is the timeout timestamp on the source chain
+	_ []byte, // packetData is the data of the packet
+	contractAddress, // contractAddress is the address of the contract on the destination chain
+	packetSenderAddress string, // packetSenderAddress is the address of the packet sender on the source chain
 ) error {
 	_, err := validateSender(contractAddress, packetSenderAddress)
 	if err != nil {
