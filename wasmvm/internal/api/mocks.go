@@ -339,40 +339,6 @@ const (
 // MockAPI is an implementation of types.GoAPI for testing purposes.
 type MockAPI struct{}
 
-func (api *MockAPI) CanonicalAddress(human string) ([]byte, uint64, error) {
-	// Implement the mock logic
-}
-
-func (api *MockAPI) HumanAddress(canon []byte) (string, uint64, error) {
-	// Implement the mock logic
-}
-
-func (api *MockAPI) ValidateAddress(human string) (uint64, error) {
-	// Implement the mock logic
-}
-
-// NewMockAPI creates a new instance of MockAPI.
-func NewMockAPI() *types.GoAPI {
-	return &types.GoAPI{
-		HumanizeAddress:     MockAPI{}.HumanAddress,
-		CanonicalizeAddress: MockAPI{}.CanonicalAddress,
-		ValidateAddress:     MockAPI{}.ValidateAddress,
-	}
-}
-
-func TestMockApi(t *testing.T) {
-	human := "foobar"
-	canon, cost, err := MockCanonicalizeAddress(human)
-	require.NoError(t, err)
-	assert.Equal(t, CanonicalLength, len(canon))
-	assert.Equal(t, CostCanonical, cost)
-
-	recover, cost, err := MockHumanizeAddress(canon)
-	require.NoError(t, err)
-	assert.Equal(t, recover, human)
-	assert.Equal(t, CostHuman, cost)
-}
-
 /**** MockQuerier ****/
 
 const DEFAULT_QUERIER_GAS_LIMIT = 1_000_000

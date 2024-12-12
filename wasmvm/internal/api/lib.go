@@ -37,7 +37,7 @@ func InitCache(config types.VMConfig) (Cache, error) {
 
 	// Initialize wazero runtime with appropriate configuration
 	wazeroRuntimeConfig := wazero.NewRuntimeConfig()
-	runtime := wazero.NewRuntimeWithConfig(wazeroRuntimeConfig)
+	runtime := wazero.NewRuntimeWithConfig(context.Background(), wazeroRuntimeConfig)
 
 	// Create the cache object
 	cache := &WazeroCache{
@@ -170,7 +170,7 @@ func (c *WazeroCache) GetMetrics() (*types.Metrics, error) {
 func (c *WazeroCache) GetPinnedMetrics() (*types.PinnedMetrics, error) {
 	// Return dummy pinned metrics or implement actual metrics collection
 	pinnedMetrics := &types.PinnedMetrics{
-		Size: 0,
+		ElementCount: 0,
 	}
 	return pinnedMetrics, nil
 }
@@ -212,7 +212,7 @@ func Instantiate(
 	moduleConfig := wazero.NewModuleConfig().
 		WithName(checksumHex).
 		WithStartFunctions("_start").
-		WithMemoryLimit(2 * 1024 * 1024) // 2 MiB limit
+		WithMemoryPages(1, 32)
 
 	// Instantiate the module
 	instance, err := cache.GetRuntime().InstantiateModule(ctx, compiledModule, moduleConfig)
@@ -222,7 +222,7 @@ func Instantiate(
 	defer instance.Close(ctx)
 
 	// Register host functions (imports)
-	if err := registerImports(ctx, cache.GetRuntime(), instance, store, api, querier, gasMeter); err != nil {
+	if err := registerImports(ctx, cache.GetRuntime(), instance, store, api, *querier, *gasMeter); err != nil {
 		return nil, types.GasReport{}, fmt.Errorf("failed to register imports: %w", err)
 	}
 
@@ -261,9 +261,9 @@ func Instantiate(
 	}
 
 	// Generate gas report
-	gasUsed := gasMeter.GasConsumed()
+	gasUsed := (*gasMeter).GasConsumed()
 	gasReport := types.GasReport{
-		Used: gasUsed,
+		UsedExternally: gasUsed,
 	}
 
 	return resData, gasReport, nil
