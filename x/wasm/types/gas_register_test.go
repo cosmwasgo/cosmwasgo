@@ -307,7 +307,7 @@ func TestFromWasmVMGasConversion(t *testing.T) {
 			src: math.MaxUint64,
 			exp: math.MaxUint64,
 		},
-		"missconfigured": {
+		"misconfigured": {
 			srcConfig: WasmGasRegisterConfig{
 				GasMultiplier: 0,
 			},
