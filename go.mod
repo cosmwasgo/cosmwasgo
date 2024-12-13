@@ -1,6 +1,6 @@
 module github.com/CosmWasm/wasmd
 
-go 1.23.1
+go 1.23.2
 
 require (
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
@@ -186,6 +186,7 @@ require (
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tendermint/go-amino v0.16.0 // indirect
+	github.com/tetratelabs/wazero v1.8.1 // indirect
 	github.com/tidwall/btree v1.7.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect

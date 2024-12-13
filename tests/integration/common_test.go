@@ -29,7 +29,7 @@ func assertStoreCodeResponse(t *testing.T, data []byte, expected uint64) {
 	t.Helper()
 	var pStoreResp types.MsgStoreCodeResponse
 	require.NoError(t, pStoreResp.Unmarshal(data))
-	require.Equal(t, pStoreResp.CodeID, expected)
+	require.Equal(t, expected, pStoreResp.CodeID)
 }
 
 // ensure execution returns the expected data
@@ -37,7 +37,7 @@ func assertExecuteResponse(t *testing.T, data, expected []byte) {
 	t.Helper()
 	var pExecResp types.MsgExecuteContractResponse
 	require.NoError(t, pExecResp.Unmarshal(data))
-	require.Equal(t, pExecResp.Data, expected)
+	require.Equal(t, expected, pExecResp.Data)
 }
 
 // ensures this returns a valid bech32 address and returns it

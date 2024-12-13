@@ -24,6 +24,7 @@ linters:
     - ineffassign
     - maintidx
     - misspell
+    - copyloopvar
     - nakedret
     - nestif
     - nilerr
@@ -34,8 +35,8 @@ linters:
     - tenv
     - typecheck
     - tagalign
-    - tagliatelle
-    - thelper # too many positives with table tests that have custom setup(*testing.T)
+    #   - tagliatelle
+    #    - thelper # too many positives with table tests that have custom setup(*testing.T)
     - testifylint
     #    - perfsprint #
     - promlinter

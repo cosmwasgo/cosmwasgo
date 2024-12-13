@@ -212,7 +212,7 @@ func TestContractInfoMarshalUnmarshal(t *testing.T) {
 	// and sanity check nested any
 	var destExt v1beta1.Proposal
 	require.NoError(t, dest.ReadExtension(&destExt))
-	assert.Equal(t, destExt.GetTitle(), "bar")
+	assert.Equal(t, "bar", destExt.GetTitle())
 }
 
 func TestContractInfoReadExtension(t *testing.T) {
