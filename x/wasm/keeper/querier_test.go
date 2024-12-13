@@ -161,7 +161,7 @@ func TestQuerySmartContractState(t *testing.T) {
 	for msg, spec := range specs {
 		t.Run(msg, func(t *testing.T) {
 			got, err := q.SmartContractState(ctx, spec.srcQuery)
-			require.True(t, errors.Is(err, spec.expErr), "but got %+v", err)
+			require.ErrorIs(t, err, spec.expErr, "but got %+v", err)
 			if spec.expErr != nil {
 				return
 			}
@@ -209,7 +209,7 @@ func TestQuerySmartContractPanics(t *testing.T) {
 				Address:   contractAddr.String(),
 				QueryData: types.RawContractMessage("{}"),
 			})
-			require.True(t, spec.expErr.Is(err), "got error: %+v", err)
+			require.ErrorIs(t, err, spec.expErr, "got error: %+v", err)
 			assert.Nil(t, got)
 		})
 	}

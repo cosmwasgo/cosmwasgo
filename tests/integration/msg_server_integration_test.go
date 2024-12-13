@@ -231,7 +231,7 @@ func TestAddCodeUploadParamsAddresses(t *testing.T) {
 			}
 			require.NoError(t, err)
 			require.Len(t, rsp.MsgResponses, 1)
-			assert.IsType(t, rsp.MsgResponses[0].GetCachedValue(), &types.MsgAddCodeUploadParamsAddressesResponse{})
+			assert.IsType(t, &types.MsgAddCodeUploadParamsAddressesResponse{}, rsp.MsgResponses[0].GetCachedValue())
 
 			// then
 			gotUploadConfig := wasmApp.WasmKeeper.GetParams(ctx).CodeUploadAccess
@@ -327,7 +327,7 @@ func TestRemoveCodeUploadParamsAddresses(t *testing.T) {
 			}
 			require.NoError(t, err)
 			require.Len(t, rsp.MsgResponses, 1)
-			assert.IsType(t, rsp.MsgResponses[0].GetCachedValue(), &types.MsgRemoveCodeUploadParamsAddressesResponse{})
+			assert.IsType(t, &types.MsgRemoveCodeUploadParamsAddressesResponse{}, rsp.MsgResponses[0].GetCachedValue())
 
 			// then
 			gotUploadConfig := wasmApp.WasmKeeper.GetParams(ctx).CodeUploadAccess

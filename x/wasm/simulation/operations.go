@@ -196,7 +196,7 @@ func SimulateMsgMigrateContract(
 		app *baseapp.BaseApp,
 		ctx sdk.Context,
 		accs []simtypes.Account,
-		chainID string,
+		_ string,
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 		simAccount, _ := simtypes.RandomAcc(r, accs)
 		ctAddress, info := contractSelector(ctx, wasmKeeper, simAccount.Address.String())
@@ -245,7 +245,7 @@ func SimulateMsgClearAdmin(
 		app *baseapp.BaseApp,
 		ctx sdk.Context,
 		accounts []simtypes.Account,
-		chainID string,
+		_ string,
 	) (OperationMsg simtypes.OperationMsg, futureOps []simtypes.FutureOperation, err error) {
 		simAccount, _ := simtypes.RandomAcc(r, accounts)
 		ctAddress := contractSelector(ctx, wasmKeeper, simAccount.Address.String())
@@ -290,7 +290,7 @@ func SimulateMsgUpdateAmin(
 		app *baseapp.BaseApp,
 		ctx sdk.Context,
 		accs []simtypes.Account,
-		chainID string,
+		_ string,
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 		simAccount, _ := simtypes.RandomAcc(r, accs)
 		ctAddress, _ := contractSelector(ctx, wasmKeeper, simAccount.Address.String())
@@ -325,7 +325,7 @@ func SimulateMsgStoreCode(
 		app *baseapp.BaseApp,
 		ctx sdk.Context,
 		accs []simtypes.Account,
-		chainID string,
+		_ string,
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 		if wasmKeeper.GetParams(ctx).CodeUploadAccess.Permission != types.AccessTypeEverybody {
 			return simtypes.NoOpMsg(types.ModuleName, types.MsgStoreCode{}.Type(), "no chain permission"), nil, nil
@@ -374,7 +374,7 @@ func SimulateMsgInstantiateContract(
 		app *baseapp.BaseApp,
 		ctx sdk.Context,
 		accs []simtypes.Account,
-		chainID string,
+		_ string,
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 		simAccount, _ := simtypes.RandomAcc(r, accs)
 
@@ -428,7 +428,7 @@ func SimulateMsgExecuteContract(
 		app *baseapp.BaseApp,
 		ctx sdk.Context,
 		accs []simtypes.Account,
-		chainID string,
+		_ string,
 	) (simtypes.OperationMsg, []simtypes.FutureOperation, error) {
 		contractAddr := contractSelector(ctx, wasmKeeper)
 		if contractAddr == nil {
@@ -497,7 +497,7 @@ func BuildOperationInput(
 // DefaultSimulationExecuteContractSelector picks the first contract address
 func DefaultSimulationExecuteContractSelector(ctx sdk.Context, wasmKeeper WasmKeeper) sdk.AccAddress {
 	var r sdk.AccAddress
-	wasmKeeper.IterateContractInfo(ctx, func(address sdk.AccAddress, info types.ContractInfo) bool {
+	wasmKeeper.IterateContractInfo(ctx, func(address sdk.AccAddress, _ types.ContractInfo) bool {
 		r = address
 		return true
 	})

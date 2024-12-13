@@ -75,26 +75,42 @@ func ValidateSalt(salt []byte) error {
 	return nil
 }
 
+func hasAnyVerificationInfo(source, builder string, codeHash []byte) bool {
+	return len(source) != 0 || len(builder) != 0 || len(codeHash) != 0
+}
+
+func validateSource(source string) error {
+	if source == "" {
+		return fmt.Errorf("source is required")
+	}
+	if _, err := url.ParseRequestURI(source); err != nil {
+		return fmt.Errorf("source: %s", err)
+	}
+	return nil
+}
+
+func validateBuilder(builder string) error {
+	if builder == "" {
+		return fmt.Errorf("builder is required")
+	}
+	if _, err := reference.ParseDockerRef(builder); err != nil {
+		return fmt.Errorf("builder: %s", err)
+	}
+	return nil
+}
+
 // ValidateVerificationInfo ensure source, builder and checksum constraints
 func ValidateVerificationInfo(source, builder string, codeHash []byte) error {
-	// if any set require others to be set
-	if len(source) != 0 || len(builder) != 0 || len(codeHash) != 0 {
-		if source == "" {
-			return fmt.Errorf("source is required")
+	if hasAnyVerificationInfo(source, builder, codeHash) {
+		if err := validateSource(source); err != nil {
+			return err
 		}
-		if _, err := url.ParseRequestURI(source); err != nil {
-			return fmt.Errorf("source: %s", err)
-		}
-		if builder == "" {
-			return fmt.Errorf("builder is required")
-		}
-		if _, err := reference.ParseDockerRef(builder); err != nil {
-			return fmt.Errorf("builder: %s", err)
+		if err := validateBuilder(builder); err != nil {
+			return err
 		}
 		if codeHash == nil {
 			return fmt.Errorf("code hash is required")
 		}
-		// code hash checksum match validation is done in the keeper, ungzipping consumes gas
 	}
 	return nil
 }

@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
@@ -54,15 +53,18 @@ func (app *WasmApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllowedA
 //
 //	in favor of export at a block height
 func (app *WasmApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) {
-	applyAllowedAddrs := false
+	allowedAddrsMap := app.buildAllowedAddrsMap(jailAllowedAddrs)
+	app.CrisisKeeper.AssertInvariants(ctx)
 
-	// check if there is a allowed address list
-	if len(jailAllowedAddrs) > 0 {
-		applyAllowedAddrs = true
-	}
+	height := ctx.BlockHeight()
+	ctx = app.handleFeeDistribution(ctx)
+	ctx = app.handleStakingState(ctx, allowedAddrsMap)
+	ctx = app.handleSlashingState(ctx)
+	ctx = ctx.WithBlockHeight(height)
+}
 
+func (app *WasmApp) buildAllowedAddrsMap(jailAllowedAddrs []string) map[string]bool {
 	allowedAddrsMap := make(map[string]bool)
-
 	for _, addr := range jailAllowedAddrs {
 		_, err := sdk.ValAddressFromBech32(addr)
 		if err != nil {
@@ -70,13 +72,41 @@ func (app *WasmApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs [
 		}
 		allowedAddrsMap[addr] = true
 	}
+	return allowedAddrsMap
+}
 
-	/* Just to be safe, assert the invariants on current state. */
-	app.CrisisKeeper.AssertInvariants(ctx)
+func (app *WasmApp) handleFeeDistribution(ctx sdk.Context) sdk.Context {
+	// Handle withdrawals and fee distribution state
+	app.withdrawValidatorCommissions(ctx)
+	app.withdrawDelegatorRewards(ctx)
+	app.clearValidatorData(ctx)
+	return ctx
+}
 
-	/* Handle fee distribution state. */
+func (app *WasmApp) handleStakingState(ctx sdk.Context, allowedAddrsMap map[string]bool) sdk.Context {
+	// Handle staking state updates
+	app.resetRedelegations(ctx)
+	app.resetUnbondingDelegations(ctx)
+	app.updateValidators(ctx, allowedAddrsMap)
+	return ctx
+}
 
-	// withdraw all validator commission
+func (app *WasmApp) handleSlashingState(ctx sdk.Context) sdk.Context {
+	// Reset slashing state
+	if err := app.SlashingKeeper.IterateValidatorSigningInfos(
+		ctx,
+		func(addr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
+			info.StartHeight = 0
+			return app.SlashingKeeper.SetValidatorSigningInfo(ctx, addr, info) != nil
+		},
+	); err != nil {
+		panic(err)
+	}
+	return ctx
+}
+
+// withdraw all validator commission
+func (app *WasmApp) withdrawValidatorCommissions(ctx sdk.Context) {
 	err := app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
 		valBz, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(val.GetOperator())
 		if err != nil {
@@ -88,8 +118,10 @@ func (app *WasmApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs [
 	if err != nil {
 		panic(err)
 	}
+}
 
-	// withdraw all delegator rewards
+// withdraw all delegator rewards
+func (app *WasmApp) withdrawDelegatorRewards(ctx sdk.Context) {
 	dels, err := app.StakingKeeper.GetAllDelegations(ctx)
 	if err != nil {
 		panic(err)
@@ -107,71 +139,17 @@ func (app *WasmApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs [
 			panic(err)
 		}
 	}
+}
 
-	// clear validator slash events
+// clear validator slash events
+func (app *WasmApp) clearValidatorData(ctx sdk.Context) {
 	app.DistrKeeper.DeleteAllValidatorSlashEvents(ctx)
-
-	// clear validator historical rewards
 	app.DistrKeeper.DeleteAllValidatorHistoricalRewards(ctx)
+}
 
-	// set context height to zero
-	height := ctx.BlockHeight()
-	ctx = ctx.WithBlockHeight(0)
-
-	// reinitialize all validators
-	err = app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
-		valBz, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(val.GetOperator())
-		if err != nil {
-			panic(err)
-		}
-		// donate any unwithdrawn outstanding reward fraction tokens to the community pool
-		scraps, err := app.DistrKeeper.GetValidatorOutstandingRewardsCoins(ctx, valBz)
-		if err != nil {
-			panic(err)
-		}
-		feePool, err := app.DistrKeeper.FeePool.Get(ctx)
-		if err != nil {
-			panic(err)
-		}
-		feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
-		if err := app.DistrKeeper.FeePool.Set(ctx, feePool); err != nil {
-			panic(err)
-		}
-
-		if err := app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, valBz); err != nil {
-			panic(err)
-		}
-		return false
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	// reinitialize all delegations
-	for _, del := range dels {
-		valAddr, err := sdk.ValAddressFromBech32(del.ValidatorAddress)
-		if err != nil {
-			panic(err)
-		}
-		delAddr := sdk.MustAccAddressFromBech32(del.DelegatorAddress)
-
-		if err := app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, delAddr, valAddr); err != nil {
-			// never called as BeforeDelegationCreated always returns nil
-			panic(fmt.Errorf("error while incrementing period: %w", err))
-		}
-
-		if err := app.DistrKeeper.Hooks().AfterDelegationModified(ctx, delAddr, valAddr); err != nil {
-			// never called as AfterDelegationModified always returns nil
-			panic(fmt.Errorf("error while creating a new delegation period record: %w", err))
-		}
-	}
-
-	// reset context height
-	ctx = ctx.WithBlockHeight(height)
-
-	/* Handle staking state. */
-
-	// iterate through redelegations, reset creation height
+// reset redelegations
+func (app *WasmApp) resetRedelegations(ctx sdk.Context) {
+	var err error
 	err = app.StakingKeeper.IterateRedelegations(ctx, func(_ int64, red stakingtypes.Redelegation) (stop bool) {
 		for i := range red.Entries {
 			red.Entries[i].CreationHeight = 0
@@ -185,8 +163,11 @@ func (app *WasmApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs [
 	if err != nil {
 		panic(err)
 	}
+}
 
-	// iterate through unbonding delegations, reset creation height
+// reset unbonding delegations
+func (app *WasmApp) resetUnbondingDelegations(ctx sdk.Context) {
+	var err error
 	err = app.StakingKeeper.IterateUnbondingDelegations(ctx, func(_ int64, ubd stakingtypes.UnbondingDelegation) (stop bool) {
 		for i := range ubd.Entries {
 			ubd.Entries[i].CreationHeight = 0
@@ -200,9 +181,11 @@ func (app *WasmApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs [
 	if err != nil {
 		panic(err)
 	}
+}
 
-	// Iterate through validators by power descending, reset bond heights, and
-	// update bond intra-tx counters.
+// iterate through validators by power descending, reset bond heights, and
+// update bond intra-tx counters.
+func (app *WasmApp) updateValidators(ctx sdk.Context, allowedAddrsMap map[string]bool) {
 	store := ctx.KVStore(app.GetKey(stakingtypes.StoreKey))
 	iter := storetypes.KVStoreReversePrefixIterator(store, stakingtypes.ValidatorsKey)
 
@@ -214,7 +197,7 @@ func (app *WasmApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs [
 		}
 
 		validator.UnbondingHeight = 0
-		if applyAllowedAddrs && !allowedAddrsMap[addr.String()] {
+		if !allowedAddrsMap[addr.String()] {
 			validator.Jailed = true
 		}
 
@@ -229,25 +212,9 @@ func (app *WasmApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs [
 		return
 	}
 
+	var err error
 	_, err = app.StakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	/* Handle slashing state. */
-
-	// reset start height on signing infos
-	err = app.SlashingKeeper.IterateValidatorSigningInfos(
-		ctx,
-		func(addr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
-			info.StartHeight = 0
-			if err := app.SlashingKeeper.SetValidatorSigningInfo(ctx, addr, info); err != nil {
-				panic(err)
-			}
-			return false
-		},
-	)
-	if err != nil {
-		panic(err)
 	}
 }

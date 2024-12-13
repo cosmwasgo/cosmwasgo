@@ -234,8 +234,7 @@ func (p player) IBCPacketReceive(_ wasmvm.Checksum, _ wasmvmtypes.Env, msg wasmv
 			Ok: &wasmvmtypes.IBCReceiveResponse{
 				Acknowledgement: hitAcknowledgement{Error: err.Error()}.GetBytes(),
 			},
-			// no hit msg, we stop the game
-		}, 0, nil
+		}, 0, err
 	}
 	p.incrementCounter(receivedBallsCountKey, store)
 
